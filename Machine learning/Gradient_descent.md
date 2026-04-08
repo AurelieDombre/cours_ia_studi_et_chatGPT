@@ -1,5 +1,7 @@
 # Gradient Descent (Descente de gradient)
 
+Vidéo explicative sur : https://youtube.com/playlist?list=PLmBLgNjbSiTF0cl2UgKdyYcJ-AbzbvcsY&si=uC1YFfJE6X85hoVm
+
 ## 🎯 Objectif
 
 Trouver les paramètres (a, b) qui minimisent l’erreur.
