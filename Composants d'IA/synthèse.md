@@ -1,26 +1,64 @@
+Parfait 👌 là c’est hyper clair ce que tu veux :
+👉 **garder ce format “fiche ultra lisible”**
+👉 mais avec **plus de profondeur pour chaque point** (niveau entretien + compréhension solide)
 
-# 🧠 FICHE 1 — Modèles & Algorithmes clés
+Je te refais donc tes fiches **améliorées + enrichies**, sans casser ton style.
+
+---
+
+# 🧠 FICHE 1 — Modèles & Algorithmes clés (VERSION DÉTAILLÉE)
+
+---
 
 ## 🌳 1. Arbre de décision
 
 ### 🧾 À retenir (version courte)
 
-* Modèle basé sur des **règles de décision**
-* Pas besoin de **scaling** ni d’encodage complexe
-* Gère bien les **valeurs manquantes**
-* Très **interprétable**
+* Modèle basé sur des **règles de décision successives**
+* Pas besoin de **scaling** ni de transformation lourde
+* Gère les **valeurs manquantes et données imparfaites**
+* Très **interprétable (explicable facilement)**
 
-### 💡 Explication rapide
+---
 
-Un arbre découpe les données avec des questions du type :
+### 💡 Explication approfondie
 
-> “Est-ce que l’âge > 30 ?”
+Un arbre de décision fonctionne comme une suite de questions :
 
-Chaque nœud = une décision → on arrive à une prédiction.
+> “Si revenu > 2000€” → branche gauche
+> “Sinon” → branche droite
 
-### ⚠️ Piège classique
+Chaque étape découpe les données pour :
+👉 **maximiser la séparation entre classes**
+
+Critères utilisés :
+
+* **Gini** (classification)
+* **Entropie (information gain)**
+
+👉 À la fin :
+on arrive à une **feuille = prédiction**
+
+---
+
+### 🎯 Intuition
+
+> “On découpe les données jusqu’à obtenir des groupes homogènes”
+
+---
+
+### ⚠️ Pièges classiques
 
 * Trop profond → **overfitting (variance élevée)**
+* Trop simple → **underfitting (biais élevé)**
+* Sensible aux petites variations des données
+
+---
+
+### 🛠 Bonnes pratiques
+
+* Limiter la profondeur (`max_depth`)
+* Utiliser un ensemble (Random Forest)
 
 ---
 
@@ -28,19 +66,45 @@ Chaque nœud = une décision → on arrive à une prédiction.
 
 ### 🧾 À retenir
 
-* Ensemble de plusieurs arbres
-* Utilise le **bagging (échantillonnage avec remise)**
+* Ensemble de **plusieurs arbres indépendants**
+* Utilise le **bagging (bootstrap sampling)**
 * Réduit la **variance**
-* Plus robuste que 1 seul arbre
+* Très robuste au surapprentissage
 
-### 💡 Explication
+---
 
-On entraîne plusieurs arbres sur des subsets différents, puis :
-👉 on **moyenne les prédictions**
+### 💡 Explication approfondie
+
+Principe :
+
+1. On tire plusieurs **échantillons avec remise**
+2. On entraîne un arbre sur chaque échantillon
+3. On combine les résultats
+
+👉 Classification → vote majoritaire
+👉 Régression → moyenne
+
+---
 
 ### 🎯 Intuition
 
-> “Plusieurs avis valent mieux qu’un seul”
+> “Un seul arbre peut se tromper, une forêt corrige les erreurs individuelles”
+
+---
+
+### ⚠️ Limites
+
+* Moins interprétable
+* Plus lourd en calcul
+* Peut sur-apprendre si mal réglé
+
+---
+
+### 🛠 Bonnes pratiques
+
+* Ajuster `n_estimators`
+* Limiter profondeur des arbres
+* Utiliser feature importance
 
 ---
 
@@ -48,34 +112,65 @@ On entraîne plusieurs arbres sur des subsets différents, puis :
 
 ### 🧾 À retenir
 
-* Modèle **linéaire** pour classification
-* Donne des **probabilités**
+* Modèle **linéaire probabiliste**
+* Sortie entre **0 et 1 (probabilité)**
 * Très **interprétable**
 
-### 💡 Explication
+---
 
-Elle trace une frontière entre classes (souvent une droite).
+### 💡 Explication approfondie
 
-### ⚠️ À savoir
+Elle modélise :
 
-* Sensible au **scaling**
-* Mauvaise si relations **non linéaires**
+👉 probabilité d’appartenir à une classe
+
+via une fonction **sigmoïde** :
+
+* transforme une somme linéaire en probabilité
+
+👉 Décision :
+
+* seuil (souvent 0.5)
+
+---
+
+### 🎯 Intuition
+
+> “On trace une frontière (ligne / plan) entre les classes”
+
+---
+
+### ⚠️ Limites
+
+* Mauvaise performance sur relations complexes
+* Sensible aux variables corrélées
+* Nécessite du **scaling**
+
+---
+
+### 🛠 Bonnes pratiques
+
+* Standardiser les données
+* Vérifier multicolinéarité
+* Régularisation (L1 / L2)
 
 ---
 
 ## ⚖️ 4. Random Forest vs Régression Logistique
 
-| Critère           | Régression logistique | Random Forest       |
-| ----------------- | --------------------- | ------------------- |
-| Interprétation    | ✅ Très claire         | ❌ difficile         |
-| Performance       | ⚠️ limitée            | ✅ souvent meilleure |
-| Données complexes | ❌                     | ✅                   |
-| Scaling           | ✅ nécessaire          | ❌ inutile           |
+| Critère        | Régression logistique | Random Forest       |
+| -------------- | --------------------- | ------------------- |
+| Interprétation | ✅ Très claire         | ❌ difficile         |
+| Performance    | ⚠️ limitée            | ✅ souvent meilleure |
+| Non-linéarité  | ❌                     | ✅                   |
+| Robustesse     | ⚠️ moyenne            | ✅ forte             |
+
+---
 
 ### 🎯 Règle simple
 
-* Besoin métier clair → **logistique**
-* Performance → **Random Forest**
+* Explication métier → **logistique**
+* Données complexes → **Random Forest**
 
 ---
 
@@ -85,19 +180,38 @@ Elle trace une frontière entre classes (souvent une droite).
 
 * Algorithme **non supervisé**
 * Regroupe en **K clusters**
-* Basé sur la **distance**
+* Basé sur la **distance (euclidienne)**
 
-### 💡 Fonctionnement
+---
 
-1. On choisit K centres
-2. On assigne les points
-3. On recalcule les centres
-4. On répète
+### 💡 Fonctionnement détaillé
+
+1. Initialisation de K centres (aléatoires)
+2. Attribution de chaque point au centre le plus proche
+3. Recalcul des centres
+4. Répétition jusqu’à convergence
+
+---
+
+### 🎯 Intuition
+
+> “Chaque point va vers le centre le plus proche”
+
+---
 
 ### ⚠️ Pièges
 
-* Il faut choisir **K**
-* Sensible à l’échelle → scaling important
+* Mauvais choix de K
+* Sensible au scaling
+* Mauvais pour formes complexes
+
+---
+
+### 🛠 Bonnes pratiques
+
+* Méthode du coude (Elbow)
+* Standardisation des données
+* Tester plusieurs K
 
 ---
 
@@ -107,17 +221,38 @@ Elle trace une frontière entre classes (souvent une droite).
 
 * Réduit le nombre de variables
 * Supprime la **redondance**
-* Conserve l’info principale (variance)
+* Conserve la **variance maximale**
 
-### 💡 Explication
+---
 
-Transforme les variables en nouvelles variables indépendantes :
-👉 “composantes principales”
+### 💡 Explication approfondie
 
-### 🎯 Pourquoi utile ?
+La PCA transforme les variables en :
+👉 **nouvelles variables orthogonales (indépendantes)**
 
-* Accélère les modèles
-* Améliore la visualisation
+appelées :
+👉 **composantes principales**
+
+---
+
+### 🎯 Intuition
+
+> “On compresse l’information sans trop la perdre”
+
+---
+
+### ⚠️ Limites
+
+* Perte d’interprétabilité
+* Transformation abstraite
+
+---
+
+### 🛠 Cas d’usage
+
+* Visualisation (2D / 3D)
+* Accélération des modèles
+* Réduction du bruit
 
 ---
 
@@ -130,30 +265,74 @@ Transforme les variables en nouvelles variables indépendantes :
 | Supervisé     | Avec labels | Prédire  |
 | Non supervisé | Sans labels | Explorer |
 
-### 💡 Exemples
+---
 
-* Supervisé → classification (spam)
-* Non supervisé → clustering clients
+### 💡 Explication approfondie
+
+👉 Supervisé :
+
+* apprend une relation entrée → sortie
+* ex : classification spam
+
+👉 Non supervisé :
+
+* découvre des structures cachées
+* ex : segmentation client
 
 ---
 
-# 🧠 FICHE 2 — Concepts fondamentaux
+### 🎯 Différence clé
+
+> “Supervisé = prédire, Non supervisé = comprendre”
+
+---
+
+# 🧠 FICHE 2 — Concepts fondamentaux (VERSION DÉTAILLÉE)
+
+---
 
 ## 🎯 1. Biais vs Variance
 
 ### 🧾 À retenir
 
-* **Biais élevé** → modèle trop simple (underfitting)
-* **Variance élevée** → modèle trop complexe (overfitting)
+* Biais élevé → modèle trop simple
+* Variance élevée → modèle trop complexe
 
-### 💡 Image mentale
+---
 
-* Biais → “je simplifie trop”
+### 💡 Explication approfondie
+
+👉 Biais :
+
+* simplifie trop la réalité
+* erreurs systématiques
+
+👉 Variance :
+
+* dépend trop des données
+* instable
+
+---
+
+### 🎯 Image mentale
+
+* Biais → “je généralise trop”
 * Variance → “je mémorise tout”
+
+---
+
+### ⚠️ Impact
+
+| Cas             | Résultat     |
+| --------------- | ------------ |
+| Biais élevé     | underfitting |
+| Variance élevée | overfitting  |
+
+---
 
 ### 🎯 Objectif
 
-👉 Trouver l’équilibre
+👉 Trouver le **juste équilibre**
 
 ---
 
@@ -161,18 +340,35 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Corrélation = lien statistique
-* Causalité = relation de cause à effet
+* Corrélation ≠ causalité
+* Peut être dû à une variable cachée
 
-### 💡 Exemple
+---
 
-* Glaces ↑ → noyades ↑
-  👉 corrélation (été), PAS causalité
+### 💡 Approfondissement
 
-### 🎯 Comment prouver la causalité ?
+👉 Corrélation :
 
-* Expériences (A/B test)
-* Variables contrôlées
+* relation statistique
+* peut être accidentelle
+
+👉 Causalité :
+
+* lien direct cause → effet
+
+---
+
+### 🎯 Comment prouver ?
+
+* A/B testing
+* Expériences contrôlées
+* Modèles causaux
+
+---
+
+### ⚠️ Piège classique
+
+> “Les données seules ne prouvent pas la causalité”
 
 ---
 
@@ -180,37 +376,52 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Excellent sur train
-* Mauvais sur test
+* Apprend trop les données d’entraînement
+* Mauvaise généralisation
+
+---
 
 ### 💡 Détection
 
-👉 Écart train vs test
+* Train score élevé
+* Test score faible
+
+---
 
 ### 🛠 Solutions
 
 * Plus de données
+* Cross-validation
 * Régularisation
-* Modèle plus simple
+* Simplifier le modèle
 
 ---
 
-# 🧠 FICHE 3 — Préparation des données
+# 🧠 FICHE 3 — Préparation des données (VERSION DÉTAILLÉE)
 
-## ⚠️ 1. Data Leakage (fuite de données)
+---
+
+## ⚠️ 1. Data Leakage
 
 ### 🧾 À retenir
 
-* Infos du test dans le train ❌
-* Résultats faussés
+* Fuite d’information du futur
+* Résultats artificiellement bons
 
-### 💡 Exemple
+---
 
-* Scaling AVANT split
+### 💡 Exemples
 
-### ✅ Bonne pratique
+* Scaling avant split
+* Feature contenant la cible
+* Mauvais pipeline
 
-👉 Split → puis preprocessing
+---
+
+### 🛠 Solutions
+
+* Pipeline strict
+* Split avant preprocessing
 
 ---
 
@@ -218,29 +429,32 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Catégorielles → mode / “inconnu”
-* Numériques → moyenne / médiane
-
-### ⚠️ Exception
-
-* Arbres → gèrent naturellement
+| Type         | Solution          |
+| ------------ | ----------------- |
+| Catégorielle | mode / “inconnu”  |
+| Numérique    | moyenne / médiane |
 
 ---
 
-## 📏 3. Scaling (normalisation)
+### 💡 Approfondissement
+
+* Médiane → robuste aux outliers
+* Modèles → imputation avancée
+
+---
+
+## 📏 3. Scaling
 
 ### 🧾 À retenir
 
-* Important pour :
+* Nécessaire pour modèles basés sur distance
 
-  * Régression logistique
-  * SVM
-  * K-Means
+---
 
-* Pas nécessaire pour :
+### 💡 Pourquoi ?
 
-  * Arbres
-  * Random Forest
+👉 variables sur même échelle
+👉 sinon biais dans calculs
 
 ---
 
@@ -248,29 +462,33 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Variables très corrélées (> 0.8)
-* Problème pour modèles linéaires
-
-### 🛠 Solutions
-
-* Supprimer une variable
-* PCA
+* Variables redondantes
 
 ---
 
-# 🧠 FICHE 4 — Évaluation des modèles
+### 💡 Impact
+
+* instabilité
+* coefficients incohérents
+
+---
+
+# 🧠 FICHE 4 — Évaluation des modèles (VERSION DÉTAILLÉE)
+
+---
 
 ## 📊 1. ROC & AUC
 
 ### 🧾 À retenir
 
-* ROC = courbe TPR vs FPR
+* ROC = compromis faux positifs / vrais positifs
 * AUC = performance globale
 
-### 🎯 Interprétation
+---
 
-* 1 → parfait
-* 0.5 → aléatoire
+### 💡 Lecture
+
+* proche coin haut gauche = bon modèle
 
 ---
 
@@ -280,32 +498,52 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ⚠️ Accuracy trompeuse
 
-### ✅ Utiliser
+---
 
-* Précision
-* Rappel
+### 💡 Exemple
+
+95% classe A → modèle nul peut faire 95%
+
+---
+
+### ✅ Métriques clés
+
+* précision
+* rappel
 * F1-score
 * ROC-AUC
 
 ---
 
-# 🧠 FICHE 5 — Production & Data
+# 🧠 FICHE 5 — Production & Data (VERSION DÉTAILLÉE)
 
-## ⚙️ 1. Orchestrateur (Airflow)
+---
+
+## ⚙️ 1. Orchestrateur
 
 ### 🧾 À retenir
 
-* Automatise les pipelines
-* Planifie et surveille
+* Automatise pipelines
+* Planifie tâches
+
+---
+
+### 💡 Exemple
+
+Airflow :
+
+* DAG
+* monitoring
+* retry
 
 ---
 
 ## 🔄 2. Batch vs Temps réel
 
-| Type       | Description         |
-| ---------- | ------------------- |
-| Batch      | Traitement par lots |
-| Temps réel | Réponse instantanée |
+### 💡 Différence clé
+
+* Batch → différé
+* Temps réel → instantané
 
 ---
 
@@ -313,22 +551,36 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Données changent avec le temps
-
-### 🛠 Solution
-
-* Monitoring
-* Réentraînement
+* données évoluent → modèle devient obsolète
 
 ---
 
-# 🧠 FICHE 6 — Deep Learning & NLP
+### 🛠 Solutions
+
+* monitoring
+* retrain
+* alertes
+
+---
+
+# 🧠 FICHE 6 — Deep Learning & NLP (VERSION DÉTAILLÉE)
+
+---
 
 ## 🔁 1. Backpropagation
 
 ### 🧾 À retenir
 
-* Ajuste les poids selon l’erreur
+* calcule erreur
+* ajuste poids
+
+---
+
+### 💡 Processus
+
+1. prédiction
+2. calcul erreur
+3. mise à jour poids
 
 ---
 
@@ -336,37 +588,52 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-* Ajoute de la **non-linéarité**
-* Indispensable
+* introduit non-linéarité
+
+---
+
+### 💡 Pourquoi ?
+
+Sans ça → modèle linéaire
 
 ---
 
 ## 🧠 3. MLP vs CNN
 
-| MLP                | CNN     |
-| ------------------ | ------- |
-| Données tabulaires | Images  |
-| Pas spatial        | Spatial |
+### 💡 Différence
+
+* MLP → données tabulaires
+* CNN → images
 
 ---
 
 ## 📝 4. TF-IDF vs Embedding
 
-| TF-IDF    | Embedding  |
-| --------- | ---------- |
-| Fréquence | Sens       |
-| Simple    | Contextuel |
+### 💡 Différence
+
+* TF-IDF → fréquence brute
+* Embedding → sens + contexte
 
 ---
 
-# 🧠 FICHE 7 — Business & Expérimentation
+# 🧠 FICHE 7 — Business & Expérimentation (VERSION DÉTAILLÉE)
+
+---
 
 ## 🧪 1. A/B Testing
 
 ### 🧾 À retenir
 
-* 2 groupes (A vs B)
-* Comparaison statistique
+* comparaison de 2 groupes
+* mesure impact réel
+
+---
+
+### 💡 Étapes
+
+1. randomisation
+2. test
+3. analyse statistique
 
 ---
 
@@ -374,12 +641,13 @@ Transforme les variables en nouvelles variables indépendantes :
 
 ### 🧾 À retenir
 
-👉 Toujours traduire en **impact métier**
-
-### 💡 Exemple
-
-> +10% précision = -10% erreurs = +X€
+👉 toujours traduire en business
 
 ---
 
+### 💡 Exemple développé
+
+> +10% précision
+> → -10% erreurs
+> → moins de coûts / plus de revenus
 
