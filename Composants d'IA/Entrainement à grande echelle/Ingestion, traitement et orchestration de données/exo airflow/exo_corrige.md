@@ -17,7 +17,7 @@ airflow-demo/dags/
 ```bash
 etl_csv.py
 ```
-
+Pour générer des données : https://www.mockaroo.com/
 ---
 
 # 🧠 Étape 2 — structure minimale du DAG
