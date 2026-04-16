@@ -1,9 +1,3 @@
-Parfait 👌 là c’est hyper clair ce que tu veux :
-👉 **garder ce format “fiche ultra lisible”**
-👉 mais avec **plus de profondeur pour chaque point** (niveau entretien + compréhension solide)
-
-Je te refais donc tes fiches **améliorées + enrichies**, sans casser ton style.
-
 ---
 
 # 🧠 FICHE 1 — Modèles & Algorithmes clés (VERSION DÉTAILLÉE)
@@ -28,16 +22,40 @@ Un arbre de décision fonctionne comme une suite de questions :
 > “Si revenu > 2000€” → branche gauche
 > “Sinon” → branche droite
 
-Chaque étape découpe les données pour :
-👉 **maximiser la séparation entre classes**
+Un arbre construit ses splits en choisissant la variable et le seuil qui **réduisent le plus l’impureté** :
 
-Critères utilisés :
+👉 Gini :
 
-* **Gini** (classification)
-* **Entropie (information gain)**
+* mesure l’hétérogénéité d’un nœud
+* plus il est faible → plus le nœud est “pur”
+
+👉 Entropie :
+
+* mesure le désordre (inspiré de la théorie de l’information)
+
+👉 Information Gain :
+
+* gain obtenu après un split
 
 👉 À la fin :
 on arrive à une **feuille = prédiction**
+
+---
+
+### 🔍 Détails importants
+
+* Les arbres peuvent gérer :
+
+  * variables numériques **et** catégorielles
+* Pas besoin de :
+
+  * normalisation
+  * transformation linéaire
+
+👉 MAIS :
+
+* biais vers variables avec beaucoup de modalités
+* instabilité forte
 
 ---
 
@@ -52,6 +70,15 @@ on arrive à une **feuille = prédiction**
 * Trop profond → **overfitting (variance élevée)**
 * Trop simple → **underfitting (biais élevé)**
 * Sensible aux petites variations des données
+
+---
+
+### 🛠 Hyperparamètres clés
+
+* `max_depth`
+* `min_samples_split`
+* `min_samples_leaf`
+* `criterion` (gini / entropy)
 
 ---
 
@@ -84,6 +111,19 @@ Principe :
 👉 Classification → vote majoritaire
 👉 Régression → moyenne
 
+En plus du bagging :
+
+👉 Random Forest ajoute :
+➡️ **feature randomness**
+
+À chaque split :
+👉 on ne teste qu’un sous-ensemble de variables
+
+➡️ Résultat :
+
+* arbres **décorrélés**
+* meilleure généralisation
+  
 ---
 
 ### 🎯 Intuition
@@ -94,10 +134,13 @@ Principe :
 
 ### ⚠️ Limites
 
-* Moins interprétable
-* Plus lourd en calcul
-* Peut sur-apprendre si mal réglé
-
+* Peu performant sur :
+  * données très haute dimension sparse (texte brut)
+  * Moins bon que boosting sur problèmes complexes
+  * Moins interprétable
+  * Plus lourd en calcul
+  * Peut sur-apprendre si mal réglé
+  
 ---
 
 ### 🛠 Bonnes pratiques
@@ -105,6 +148,17 @@ Principe :
 * Ajuster `n_estimators`
 * Limiter profondeur des arbres
 * Utiliser feature importance
+
+---
+
+
+### 🆚 Bonus : Random Forest vs Gradient Boosting
+
+| RF                  | Boosting                     |
+| ------------------- | ---------------------------- |
+| arbres indépendants | arbres séquentiels           |
+| réduit variance     | réduit biais                 |
+| robuste             | plus performant mais fragile |
 
 ---
 
@@ -131,6 +185,21 @@ via une fonction **sigmoïde** :
 👉 Décision :
 
 * seuil (souvent 0.5)
+
+---
+
+### 🔍 Détails importants
+
+* Optimisation :
+
+  * descente de gradient
+  * minimise log-loss (cross-entropy)
+
+* Interprétation :
+
+  * coefficient = impact sur le log-odds
+
+👉 exp(coef) = **odds ratio**
 
 ---
 
@@ -193,6 +262,27 @@ via une fonction **sigmoïde** :
 
 ---
 
+### ⚠️ Détails critiques
+
+* Sensible à l’initialisation
+  👉 utiliser **k-means++**
+
+* Suppose :
+
+  * clusters sphériques
+  * taille similaire
+
+---
+
+---
+
+### 📌 Alternatives importantes
+
+* DBSCAN → clusters non sphériques
+* Hierarchical clustering → structure arborescente
+
+---
+
 ### 🎯 Intuition
 
 > “Chaque point va vers le centre le plus proche”
@@ -222,6 +312,7 @@ via une fonction **sigmoïde** :
 * Réduit le nombre de variables
 * Supprime la **redondance**
 * Conserve la **variance maximale**
+* Composantes triées par importance
 
 ---
 
@@ -248,6 +339,15 @@ appelées :
 
 ---
 
+### ⚠️ Point critique
+
+👉 PCA est **linéaire**
+
+➡️ ne capture pas :
+
+* relations non linéaires
+
+---
 ### 🛠 Cas d’usage
 
 * Visualisation (2D / 3D)
@@ -300,6 +400,14 @@ appelées :
 
 ---
 
+### 🔍 Décomposition erreur
+
+Erreur totale =
+
+👉 biais² + variance + bruit irréductible
+
+---
+
 ### 💡 Explication approfondie
 
 👉 Biais :
@@ -312,6 +420,13 @@ appelées :
 * dépend trop des données
 * instable
 
+* modèles simples → biais élevé
+* modèles complexes → variance élevée
+
+👉 ex :
+
+* arbre profond → variance
+* régression → biais
 ---
 
 ### 🎯 Image mentale
@@ -397,6 +512,14 @@ appelées :
 
 ---
 
+### 🔍 Techniques avancées
+
+* Early stopping
+* Dropout (deep learning)
+* Data augmentation
+
+---
+
 # 🧠 FICHE 3 — Préparation des données (VERSION DÉTAILLÉE)
 
 ---
@@ -407,6 +530,9 @@ appelées :
 
 * Fuite d’information du futur
 * Résultats artificiellement bons
+* * target encoding mal fait
+* CV mal construite
+* features temporelles mal alignées
 
 ---
 
@@ -458,7 +584,29 @@ appelées :
 
 ---
 
+### ⚠️ Important
+
+👉 inutile pour :
+
+* arbres
+* Random Forest
+
+👉 crucial pour :
+
+* KNN
+* SVM
+* K-Means
+* régression logistique
+
+---
+
 ## 🔗 4. Multicolinéarité
+
+### 🔍 Détection
+
+* VIF (Variance Inflation Factor)
+
+---
 
 ### 🧾 À retenir
 
@@ -483,6 +631,15 @@ appelées :
 
 * ROC = compromis faux positifs / vrais positifs
 * AUC = performance globale
+
+---
+
+### 🔍 Interprétation AUC
+
+* 0.5 → aléatoire
+* 0.7 → acceptable
+* 0.8 → bon
+* 0.9 → excellent
 
 ---
 
@@ -515,6 +672,29 @@ appelées :
 
 ---
 
+### ⚠️ Limite
+
+ROC trompeur si dataset déséquilibré
+
+👉 préférer :
+
+* Precision-Recall curve
+
+---
+
+## ⚖️ 2. Dataset déséquilibré (complété)
+
+### 🛠 Solutions
+
+* Resampling :
+
+  * oversampling (SMOTE)
+  * undersampling
+
+* Pondération des classes
+
+---
+
 # 🧠 FICHE 5 — Production & Data (VERSION DÉTAILLÉE)
 
 ---
@@ -542,6 +722,14 @@ Airflow :
 
 ### 💡 Différence clé
 
+
+| Batch         | Temps réel     |
+| ------------- | -------------- |
+| volumineux    | faible latence |
+| simple        | complexe       |
+| moins coûteux | infra lourde   |
+
+
 * Batch → différé
 * Temps réel → instantané
 
@@ -560,6 +748,7 @@ Airflow :
 * monitoring
 * retrain
 * alertes
+
 
 ---
 
@@ -598,12 +787,28 @@ Sans ça → modèle linéaire
 
 ---
 
+### 🔍 Exemples
+
+* ReLU :
+
+  * rapide
+  * évite gradient vanishing
+
+* Sigmoid :
+
+  * probabilités
+  * mais saturation
+
+---
+
 ## 🧠 3. MLP vs CNN
 
 ### 💡 Différence
 
 * MLP → données tabulaires
 * CNN → images
+        * convolution → détection motifs
+        * pooling → réduction dimension
 
 ---
 
@@ -612,7 +817,10 @@ Sans ça → modèle linéaire
 ### 💡 Différence
 
 * TF-IDF → fréquence brute
-* Embedding → sens + contexte
+* Embeddings (Word2Vec, BERT) :
+
+  * capturent similarité sémantique
+  * dimension dense
 
 ---
 
@@ -637,6 +845,22 @@ Sans ça → modèle linéaire
 
 ---
 
+### 🔍 Concepts statistiques
+
+* p-value
+* intervalle de confiance
+* puissance statistique
+
+---
+
+### ⚠️ Pièges
+
+* biais de sélection
+* durée trop courte
+* effet saisonnier
+
+---
+
 ## 💰 2. Expliquer un gain modèle
 
 ### 🧾 À retenir
@@ -651,3 +875,19 @@ Sans ça → modèle linéaire
 > → -10% erreurs
 > → moins de coûts / plus de revenus
 
+### 🔍 Approche structurée
+
+1. Métrique ML
+2. Impact opérationnel
+3. Traduction business
+
+---
+
+### 🎯 Exemple enrichi
+
+> +10% recall fraude
+> → +10% fraudes détectées
+> → économies directes
+> → ROI mesurable
+
+---
