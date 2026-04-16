@@ -1,6 +1,3 @@
-Parfait — excellente idée 👍
-Je te rajoute des **définitions claires, courtes et mémorisables** pour toutes les notions clés, directement intégrables dans ta fiche.
-
 ---
 
 # 🧠 FICHE — Définitions essentielles (à connaître par cœur)
