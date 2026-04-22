@@ -1,5 +1,5 @@
 import unittest
-from test_unitaire.produit import Produit
+from Tests.test_unitaire.produit import Produit
 
 class TestProduit(unittest.TestCase):
 

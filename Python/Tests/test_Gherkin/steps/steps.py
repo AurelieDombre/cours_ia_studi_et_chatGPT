@@ -1,5 +1,5 @@
 from behave import given, then, when
-from test_Gherkin.produit_stocke import Produit
+from Tests.test_Gherkin.produit_stocke import Produit
 
 
 @given('un produit "{nom_produit}" avec {stock:d} en stock')
