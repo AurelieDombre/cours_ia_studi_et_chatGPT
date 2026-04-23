@@ -13,9 +13,17 @@ def login():
         nom = request.form["lastname"]
         return redirect(url_for('success', prenom=prenom, nom=nom))
 
+#parametre via URL
 @app.route('/success/<prenom>/<nom>')
 def success(prenom, nom):
     return f'Bonjour {prenom} {nom}'
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# Plus propre :
+# @app.route('/success', methods=['POST'])
+# def success():
+#     prenom = request.form["firstname"]
+#     nom = request.form["lastname"]
+#     return render_template("success.html", prenom=prenom, nom=nom)
