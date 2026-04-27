@@ -1,7 +1,5 @@
 # 📘 Cours Django ORM : Méthodes de recherche et boucles
 
-Format Markdown (.md) — prêt à être utilisé comme support de cours ou README
-
 ---
 
 ## 1. Exemple de modèle
