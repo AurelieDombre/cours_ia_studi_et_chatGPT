@@ -1,0 +1,19 @@
+{
+  "name": "conception_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "utilisateurs.js",
+  "scripts": {
+    "start": "node utilisateurs.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-basic-auth": "^1.2.1",
+    "marked": "^18.0.2",
+    "moment": "^2.30.1"
+  }
+}
