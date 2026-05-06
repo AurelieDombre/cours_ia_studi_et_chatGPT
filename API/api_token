@@ -1,0 +1,417 @@
+---
+
+# 🔐 1. Le principe général
+
+Une API avec token fonctionne comme ça :
+
+1. L’utilisateur envoie ses identifiants (`/login`)
+2. Le serveur vérifie
+3. Il génère un **token JWT**
+4. Le client stocke ce token
+5. À chaque requête suivante → il envoie le token
+6. Le serveur vérifie le token avant d’autoriser l’accès
+
+👉 Le token remplace la session classique.
+
+---
+
+# ⚙️ 2. Explication de ton code
+
+### Import des modules
+
+```js
+const express = require('express')
+const jwt = require('jsonwebtoken')
+const e_jwt = require('express-jwt')
+```
+
+* `express` → serveur HTTP
+* `jsonwebtoken` → créer et vérifier les tokens
+* `express-jwt` → middleware qui protège les routes
+
+
+---
+
+### Configuration
+
+```js
+const SECRET = 'monapplication'
+```
+
+👉 C’est la clé secrète pour signer les tokens
+⚠️ En vrai → à mettre dans une variable d’environnement
+
+---
+
+### Middleware JSON
+
+```js
+app.use(express.json())
+```
+
+👉 Permet de lire `req.body`
+
+---
+
+### Faux utilisateurs
+
+```js
+const users = [...]
+```
+
+👉 Simulation d’une base de données
+
+---
+
+### 🔥 Middleware JWT (protection)
+
+```js
+app.use(e_jwt({ secret: SECRET, algoritms: ['HS256']}).unless({path: ['/login']}))
+```
+
+👉 Ce middleware :
+
+* vérifie le token automatiquement
+* bloque toutes les routes SAUF `/login`
+
+⚠️ ERREURS :
+
+* `algoritms` → ❌ `algorithms`
+* `express-jwt` récent nécessite :
+
+```js
+require("express-jwt").expressjwt
+```
+
+---
+
+### Gestion d’erreur
+
+```js
+app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+        return res.status(401).json({
+            message: 'Token invalide ou manquant'
+        })
+    }
+    next()
+})
+```
+
+---
+
+# ✅ 3. Version corrigée + commentée
+
+Voici une version propre et fonctionnelle 👇
+
+```js
+const express = require('express')
+const jwt = require('jsonwebtoken')
+const { expressjwt: e_jwt } = require('express-jwt')
+
+const app = express()
+const port = 3004
+
+const SECRET = 'monapplication'
+
+// Lire le JSON
+app.use(express.json())
+
+// Fake base de données
+const users = [
+    {
+        username: 'John Doe',
+        email: 'john@doe.com',
+        password: 'johndoe',
+        role: 'user'
+    },
+    {
+        username: 'Jane Done',
+        email: 'jane@done.com',
+        password: 'janedone',
+        role: 'admin'
+    },
+]
+
+// 🔐 Middleware de protection
+app.use(
+    e_jwt({
+        secret: SECRET,
+        algorithms: ['HS256']
+    }).unless({ path: ['/login'] })
+)
+
+// Gestion erreurs JWT
+app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+        return res.status(401).json({
+            message: 'Token invalide ou manquant'
+        })
+    }
+    next()
+})
+
+// 🔑 LOGIN
+app.post('/login', (req, res) => {
+
+    const { email, password } = req.body
+
+    // Vérifier utilisateur
+    const user = users.find(
+        u => u.email === email && u.password === password
+    )
+
+    if (!user) {
+        return res.status(401).json({
+            message: 'Identifiants invalides'
+        })
+    }
+
+    // Créer le token
+    const token = jwt.sign(
+        {
+            username: user.username,
+            role: user.role
+        },
+        SECRET,
+        { expiresIn: '3h' }
+    )
+
+    res.json({ access_token: token })
+})
+
+// Route protégée
+app.get('/protected', (req, res) => {
+    res.json({
+        message: 'Accès autorisé',
+        user: req.auth
+    })
+})
+
+// Lancer serveur
+app.listen(port, () => {
+    console.log(`Serveur démarré sur http://localhost:${port}`)
+})
+```
+
+---
+
+# 🧠 4. Ce qu’il faut retenir
+
+### JWT contient :
+
+```json
+{
+  "username": "...",
+  "role": "...",
+  "exp": ...
+}
+```
+
+---
+
+### Cycle complet :
+
+1. POST `/login`
+2. → reçoit `token`
+3. Requête suivante :
+
+```
+Authorization: Bearer TOKEN
+```
+
+4. Middleware vérifie
+5. Accès accordé ou refusé
+
+---
+
+# 🚨 5. Bonnes pratiques
+
+* ❌ Ne jamais stocker mot de passe en clair → utiliser `bcrypt`
+* ❌ Ne jamais mettre SECRET en dur
+* ✅ Mettre expiration courte
+* ✅ Vérifier les rôles (`admin`, etc.)
+
+---
+
+
+Très bonne question — tester une API avec **Postman** est exactement ce qu’il faut pour comprendre les JWT 👍
+Je vais te guider étape par étape avec ton code.
+
+---
+# Tester dans Postman
+---
+
+## 🚀 1. Lancer ton serveur
+
+Dans ton terminal :
+
+```bash
+node app.js
+```
+
+Tu dois voir :
+
+```
+Serveur démarré sur http://localhost:3004
+```
+
+---
+
+# 🔑 2. Tester la route `/login`
+
+### Dans Postman :
+
+* Méthode : **POST**
+* URL :
+
+```
+http://localhost:3004/login
+```
+
+---
+
+### Onglet **Body**
+
+* Choisir **raw**
+* Choisir **JSON**
+
+Puis entrer :
+
+```json
+{
+  "email": "john@doe.com",
+  "password": "johndoe"
+}
+```
+
+---
+
+### ▶️ Cliquer sur **Send**
+
+👉 Réponse attendue :
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+---
+
+# 🔐 3. Tester une route protégée
+
+Exemple avec :
+
+```
+GET http://localhost:3004/protected
+```
+
+---
+
+## ❌ Sans token
+
+Tu vas avoir :
+
+```json
+{
+  "message": "Token invalide ou manquant"
+}
+```
+
+---
+
+## ✅ Avec token
+
+### Dans Postman :
+
+* Onglet **Authorization**
+* Type : **Bearer Token**
+* Coller ton token
+
+OU manuellement dans Headers :
+
+```
+Authorization: Bearer TON_TOKEN
+```
+
+---
+
+### ▶️ Cliquer sur **Send**
+
+👉 Résultat :
+
+```json
+{
+  "message": "Accès autorisé",
+  "user": {
+    "username": "John Doe",
+    "role": "user",
+    "iat": ...,
+    "exp": ...
+  }
+}
+```
+
+---
+
+# 🧠 4. Ce que fait Postman ici
+
+Postman simule un client :
+
+| Étape | Action                      |
+| ----- | --------------------------- |
+| 1     | Envoie login                |
+| 2     | Reçoit token                |
+| 3     | Renvoie token               |
+| 4     | Accède aux routes protégées |
+
+---
+
+# ⚠️ 5. Erreurs fréquentes
+
+### ❌ 401 Unauthorized
+
+* Token absent
+* Token mal copié
+* Mauvais header (`Bearer` oublié)
+
+---
+
+### ❌ 400 / 500
+
+* JSON mal formé
+* serveur pas lancé
+* erreur dans ton code
+
+---
+
+# 🧪 6. Astuce pratique
+
+Dans Postman :
+
+* Va dans **Tests** (après login)
+* Ajoute :
+
+```js
+pm.environment.set("token", pm.response.json().access_token);
+```
+
+👉 Ensuite dans Authorization :
+
+```
+Bearer {{token}}
+```
+
+💡 Tu n’auras plus besoin de copier-coller
+
+---
+
+# 🎯 Résumé simple
+
+1. POST `/login` → récupère token
+2. Ajouter `Authorization: Bearer TOKEN`
+3. Accéder aux routes protégées
+
+---
+
