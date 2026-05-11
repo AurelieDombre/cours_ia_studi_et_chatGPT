@@ -17,3 +17,9 @@ document.querySelector('#randColor').addEventListener('click', () => {
     let randomColor = `rgb(${Math.random()* 255},${Math.random()* 255},${Math.random()* 255})`
     store.dispatch({type : 'COLOR_CHANGED',payload : randomColor})
 })
+
+document.querySelector('#randNumber').addEventListener('click', () => {
+    //Ici nous passons la variable “randNumber” qui contient notre nombre aléatoire dans la propriété “payload” de notre action.
+    let randNumber = Math.floor(Math.random() * 100)
+    store.dispatch({type : 'RAND_NUMBER_CHANGED',payload : randNumber})
+})
