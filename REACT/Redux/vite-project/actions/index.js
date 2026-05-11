@@ -9,3 +9,8 @@ document.querySelector('#increment').addEventListener('click', () => {
 document.querySelector('#decrement').addEventListener('click', () => {
     store.dispatch({ type: 'COUNTER_DECREMENTED' })
 })
+
+//Lors du clic sur le bouton qui possède l’id “randColor”, nous utilisons la méthode “dispatch” de notre store afin de transmettre une action contenant le type “COLOR_CHANGED”.
+document.querySelector('#randColor').addEventListener('click', () => {
+    store.dispatch({ type: 'COLOR_CHANGED' })
+})

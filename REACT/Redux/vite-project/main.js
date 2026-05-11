@@ -3,14 +3,17 @@ import './actions/index.js'
 
 // Récupérer le conteneur du compteur
 const counterContainer = document.getElementById('counter')
+const body = document.querySelector('body')
 
 // Affichage initial du compteur
 const render = () => {
     // Récupérer la valeur du compteur depuis le state
-    const state = store.getState()
+    const { counter, color } = store.getState()
 
     // Afficher la valeur du compteur dans le conteneur
-    counterContainer.innerHTML = state.counter
+    counterContainer.innerHTML = counter.counter
+
+    body.style.backgroundColor = color.color
 }
 
 render()
