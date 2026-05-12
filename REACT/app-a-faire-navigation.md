@@ -1,88 +1,240 @@
-# Architecture moderne Tabs + Stack
+# Cours complet — React Navigation avec Tabs + Stack
 
-C’est la structure la plus utilisée en production aujourd’hui.
+On va construire une vraie architecture moderne React Native étape par étape.
+
+Le but :
+
+```txt id="y6nnn0"
+Tabs
+├── Accueil
+│    └── Détails produit
+├── Recherche
+└── Profil
+```
+
+Cette architecture est utilisée dans énormément d’apps réelles.
+
+---
+
+# 1. Comprendre le problème
+
+Dans une application web :
+
+* le navigateur gère les pages,
+* les URLs changent,
+* l’historique existe déjà.
 
 Exemple :
 
-```txt id="5v32t8"
+```txt id="c3on0w"
+/home
+/products
+/profile
+```
+
+---
+
+En React Native :
+
+* il n’y a pas de navigateur web,
+* pas d’URL par défaut,
+* pas de système de pages.
+
+Donc :
+👉 React Navigation crée un système de navigation artificiel.
+
+---
+
+# 2. Les 3 concepts fondamentaux
+
+## A. NavigationContainer
+
+Le cerveau de la navigation.
+
+Il :
+
+* stocke l’historique,
+* sait quel écran est affiché,
+* gère les transitions.
+
+---
+
+## B. Navigator
+
+Le système de navigation lui-même.
+
+Exemples :
+
+* Stack Navigator
+* Bottom Tabs Navigator
+* Drawer Navigator
+
+---
+
+## C. Screen
+
+Un écran affiché dans l’application.
+
+Exemple :
+
+```jsx id="m9u3dr"
+function HomeScreen() {
+  return <Text>Accueil</Text>;
+}
+```
+
+---
+
+# 3. Les deux types de navigation qu’on va utiliser
+
+---
+
+# Stack Navigator
+
+Fonctionne comme une pile.
+
+```txt id="m5u3dg"
+Home
+  ↓
+Details
+  ↓
+Payment
+```
+
+Quand on revient :
+
+* le dernier écran disparaît.
+
+👉 exactement comme l’historique du navigateur.
+
+---
+
+# Bottom Tabs Navigator
+
+Navigation par onglets.
+
+```txt id="w2uh1z"
+Accueil | Recherche | Profil
+```
+
+Chaque onglet possède souvent sa propre stack.
+
+C’est extrêmement important à comprendre.
+
+---
+
+# 4. Architecture finale
+
+Notre app :
+
+```txt id="2djbx3"
 NavigationContainer
-└── Bottom Tabs
+└── Tabs
     ├── Home Stack
     │   ├── HomeScreen
     │   └── DetailsScreen
     │
-    ├── Search Stack
-    │   ├── SearchScreen
-    │   └── ResultScreen
+    ├── SearchScreen
     │
-    └── Profile Stack
-        └── ProfileScreen
+    └── ProfileScreen
 ```
 
 ---
 
-# Ce qu’on va construire
+# 5. Installation
 
-Une mini app avec :
+## Création du projet
 
-## Tabs
+```bash id="v6z2t0"
+npx create-expo-app my-navigation-app
+```
 
-* 🏠 Accueil
-* 🔍 Recherche
-* 👤 Profil
+Puis :
 
-## Stack dans Home
-
-Depuis l’accueil :
-
-* on ouvre une fiche produit,
-* avec navigation stack classique.
-
----
-
-# Installation
-
-## Créer le projet
-
-```bash id="1g1tca"
-npx create-expo-app my-tabs-stack-app
+```bash id="yw2l3o"
+cd my-navigation-app
 ```
 
 ---
 
-## Installer React Navigation
+# 6. Installer React Navigation
 
-```bash id="bll8iq"
+## Core
+
+```bash id="4v5s74"
 npx expo install @react-navigation/native
+```
+
+C’est la base de React Navigation.
+
+---
+
+## Dépendances natives
+
+```bash id="y9s2pd"
 npx expo install react-native-screens react-native-safe-area-context
+```
+
+### react-native-screens
+
+Optimise les performances des écrans.
+
+---
+
+### react-native-safe-area-context
+
+Gère les zones iPhone :
+
+* notch,
+* Dynamic Island,
+* bordures.
+
+---
+
+# 7. Installer les navigateurs
+
+## Stack moderne
+
+```bash id="1cfu3e"
 npm install @react-navigation/native-stack
+```
+
+---
+
+## Bottom Tabs
+
+```bash id="1qhv5z"
 npm install @react-navigation/bottom-tabs
 ```
 
 ---
 
-# Structure conseillée
+# 8. Organisation moderne du projet
 
-```txt id="jafqj0"
+On évite les énormes fichiers.
+
+Bonne pratique :
+
+```txt id="9h1r8i"
 src/
  ├── navigation/
- │    ├── HomeStack.js
- │    └── TabNavigator.js
- │
  ├── screens/
- │    ├── HomeScreen.js
- │    ├── DetailsScreen.js
- │    ├── SearchScreen.js
- │    └── ProfileScreen.js
- │
- └── App.js
+ └── components/
 ```
 
 ---
 
-# 1. App.js
+# 9. Créer App.js
 
-```jsx id="m4q4vh"
+## Pourquoi ?
+
+C’est le point d’entrée.
+
+---
+
+## Code
+
+```jsx id="y0kjv6"
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigator from './src/navigation/TabNavigator';
 
@@ -97,44 +249,42 @@ export default function App() {
 
 ---
 
-# 2. navigation/HomeStack.js
+# 10. Comprendre NavigationContainer
 
-```jsx id="o4k5e0"
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+```jsx id="8qq1iw"
+<NavigationContainer>
+```
 
-import HomeScreen from '../screens/HomeScreen';
-import DetailsScreen from '../screens/DetailsScreen';
+Ce composant :
 
-const Stack = createNativeStackNavigator();
+* mémorise la navigation,
+* transmet le contexte,
+* permet d’utiliser :
 
-export default function HomeStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="HomeMain"
-        component={HomeScreen}
-        options={{
-          title: 'Accueil',
-        }}
-      />
+  * `navigation`
+  * `route`
+  * les hooks.
 
-      <Stack.Screen
-        name="Details"
-        component={DetailsScreen}
-        options={({ route }) => ({
-          title: route.params.product.name,
-        })}
-      />
-    </Stack.Navigator>
-  );
-}
+Sans lui :
+❌ React Navigation ne fonctionne pas.
+
+---
+
+# 11. Créer le système Tabs
+
+Créer :
+
+```txt id="ukb9lb"
+src/navigation/TabNavigator.js
 ```
 
 ---
 
-# 3. navigation/TabNavigator.js
+# 12. Le Bottom Tab Navigator
 
-```jsx id="fl2o0g"
+## Code complet
+
+```jsx id="dzzd7x"
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeStack from './HomeStack';
@@ -146,11 +296,7 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
+    <Tab.Navigator>
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}
@@ -181,84 +327,266 @@ export default function TabNavigator() {
 
 ---
 
-# 4. screens/HomeScreen.js
+# 13. Comprendre createBottomTabNavigator
 
-```jsx id="q2whdn"
+```jsx id="n9w70n"
+const Tab = createBottomTabNavigator();
+```
+
+Crée un objet contenant :
+
+* `Tab.Navigator`
+* `Tab.Screen`
+
+---
+
+# 14. Comprendre Tab.Navigator
+
+```jsx id="ozujgx"
+<Tab.Navigator>
+```
+
+C’est le conteneur des onglets.
+
+Il :
+
+* affiche la barre du bas,
+* gère le changement d’onglet,
+* garde les états des écrans.
+
+---
+
+# 15. Comprendre Tab.Screen
+
+```jsx id="f6k1f5"
+<Tab.Screen
+  name="Search"
+  component={SearchScreen}
+/>
+```
+
+On déclare :
+
+* le nom de route,
+* le composant affiché.
+
+---
+
+# 16. Point TRÈS important
+
+Regarde :
+
+```jsx id="m4q4c9"
+component={HomeStack}
+```
+
+Ce n’est PAS un écran.
+
+C’est :
+👉 un autre navigator.
+
+Donc :
+
+* un navigator peut contenir un navigator.
+
+C’est le principe du nesting.
+
+---
+
+# 17. Pourquoi imbriquer les navigateurs ?
+
+Parce qu’on veut :
+
+```txt id="6qrr3u"
+Accueil
+  ↓
+Détails produit
+```
+
+SANS perdre :
+
+* les tabs du bas,
+* l’état des autres onglets.
+
+---
+
+# 18. Création du Stack Home
+
+Créer :
+
+```txt id="4bd3to"
+src/navigation/HomeStack.js
+```
+
+---
+
+# 19. Code du Stack
+
+```jsx id="9a1qpn"
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import HomeScreen from '../screens/HomeScreen';
+import DetailsScreen from '../screens/DetailsScreen';
+
+const Stack = createNativeStackNavigator();
+
+export default function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeMain"
+        component={HomeScreen}
+      />
+
+      <Stack.Screen
+        name="Details"
+        component={DetailsScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+```
+
+---
+
+# 20. Comprendre le Stack
+
+Le stack :
+
+* empile les écrans,
+* anime les transitions,
+* gère le bouton retour.
+
+---
+
+# 21. Pourquoi Native Stack ?
+
+Ancienne API :
+
+```jsx id="rl20l9"
+@react-navigation/stack
+```
+
+Nouvelle API recommandée :
+
+```jsx id="vymq7z"
+@react-navigation/native-stack
+```
+
+Pourquoi ?
+
+* plus rapide,
+* utilise les transitions natives,
+* meilleures performances.
+
+---
+
+# 22. Créer HomeScreen
+
+Créer :
+
+```txt id="ijr2cg"
+src/screens/HomeScreen.js
+```
+
+---
+
+# 23. Code HomeScreen
+
+```jsx id="l2z76r"
 import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
 } from 'react-native';
 
 const PRODUCTS = [
-  { id: 1, name: 'iPhone 16' },
-  { id: 2, name: 'MacBook Pro' },
-  { id: 3, name: 'iPad Air' },
+  { id: 1, name: 'iPhone' },
+  { id: 2, name: 'MacBook' },
 ];
 
 export default function HomeScreen({ navigation }) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Produits
-      </Text>
+    <View>
+      <Text>Produits</Text>
 
       {PRODUCTS.map((product) => (
         <TouchableOpacity
           key={product.id}
-          style={styles.card}
           onPress={() =>
             navigation.navigate('Details', {
               product,
             })
           }
         >
-          <Text style={styles.cardTitle}>
-            {product.name}
-          </Text>
+          <Text>{product.name}</Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f3f4f6',
-  },
-
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-
-  card: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-
-  cardTitle: {
-    fontSize: 18,
-  },
-});
 ```
 
 ---
 
-# 5. screens/DetailsScreen.js
+# 24. Comprendre navigation
 
-```jsx id="m5w25v"
+Le screen reçoit automatiquement :
+
+```jsx id="z9n01v"
+{ navigation }
+```
+
+C’est une prop injectée par React Navigation.
+
+---
+
+# 25. navigation.navigate()
+
+```jsx id="9f7qjq"
+navigation.navigate('Details')
+```
+
+Permet :
+👉 d’aller vers un autre écran.
+
+---
+
+# 26. Passer des paramètres
+
+```jsx id="g9pc2n"
+navigation.navigate('Details', {
+  product,
+})
+```
+
+Le second argument devient :
+
+```jsx id="7zow4m"
+route.params
+```
+
+dans l’écran cible.
+
+---
+
+# 27. Créer DetailsScreen
+
+Créer :
+
+```txt id="z4udx9"
+src/screens/DetailsScreen.js
+```
+
+---
+
+# 28. Code DetailsScreen
+
+```jsx id="0l4o3r"
 import {
   View,
   Text,
   Button,
-  StyleSheet,
 } from 'react-native';
 
 export default function DetailsScreen({
@@ -268,25 +596,8 @@ export default function DetailsScreen({
   const { product } = route.params;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        {product.name}
-      </Text>
-
-      <Text>ID : {product.id}</Text>
-
-      <View style={{ height: 20 }} />
-
-      <Button
-        title="Ouvrir encore"
-        onPress={() =>
-          navigation.push('Details', {
-            product,
-          })
-        }
-      />
-
-      <View style={{ height: 10 }} />
+    <View>
+      <Text>{product.name}</Text>
 
       <Button
         title="Retour"
@@ -295,164 +606,163 @@ export default function DetailsScreen({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-});
 ```
 
 ---
 
-# 6. screens/SearchScreen.js
+# 29. Comprendre route.params
 
-```jsx id="sh9vgm"
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-
-export default function SearchScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Recherche
-      </Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-});
+```jsx id="8otfvi"
+const { product } = route.params;
 ```
+
+On récupère :
+
+* les paramètres envoyés,
+* depuis navigate().
 
 ---
 
-# 7. screens/ProfileScreen.js
+# 30. navigation.goBack()
 
-```jsx id="8pr54q"
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-
-export default function ProfileScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Profil
-      </Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-});
-```
-
----
-
-# Ce que cette app t’apprend
-
-## Bottom Tabs
-
-```jsx id="2vbk1v"
-createBottomTabNavigator()
-```
-
----
-
-## Stack imbriqué
-
-```jsx id="uj5z6o"
-HomeStack dans un Tab
-```
-
----
-
-## Navigation entre écrans
-
-```jsx id="a2tq0q"
-navigation.navigate()
-navigation.push()
+```jsx id="d8u6n6"
 navigation.goBack()
 ```
 
+Retire l’écran du dessus dans la stack.
+
 ---
 
-## Paramètres
+# 31. Comprendre la pile
 
-```jsx id="v0u22f"
-route.params
+Avant :
+
+```txt id="nifh9r"
+Home
+```
+
+Après :
+
+```txt id="lr9q14"
+Home
+Details
+```
+
+Puis :
+
+```jsx id="7on9r8"
+goBack()
+```
+
+revient à :
+
+```txt id="qjlwm2"
+Home
 ```
 
 ---
 
-# Pourquoi cette architecture est importante
+# 32. Ajouter SearchScreen
 
-Parce qu’elle est utilisée partout :
+```jsx id="f6m3ma"
+import { View, Text } from 'react-native';
 
-* Instagram
-* Spotify
-* Uber
-* Airbnb
-* LinkedIn
-
----
-
-# Évolution naturelle ensuite
-
-Tu pourras ajouter :
-
-## Auth Stack
-
-```txt id="5kq7z2"
-Login
-Register
-ForgotPassword
+export default function SearchScreen() {
+  return (
+    <View>
+      <Text>Recherche</Text>
+    </View>
+  );
+}
 ```
 
 ---
 
-## Protected Routes
+# 33. Ajouter ProfileScreen
 
-Utilisateur connecté ou non.
+```jsx id="s1fvhz"
+import { View, Text } from 'react-native';
+
+export default function ProfileScreen() {
+  return (
+    <View>
+      <Text>Profil</Text>
+    </View>
+  );
+}
+```
 
 ---
+
+# 34. Ce qu’il faut retenir
+
+## NavigationContainer
+
+Le cerveau.
+
+---
+
+## Tabs
+
+Navigation principale.
+
+---
+
+## Stack
+
+Navigation interne.
+
+---
+
+## Screen
+
+Composant affiché.
+
+---
+
+## navigate()
+
+Aller vers un écran.
+
+---
+
+## goBack()
+
+Retour arrière.
+
+---
+
+## route.params
+
+Récupérer les paramètres.
+
+---
+
+# 35. Architecture réelle utilisée en entreprise
+
+Très souvent :
+
+```txt id="2xq5a5"
+Auth Stack
+    ↓
+Main Tabs
+    ↓
+Nested Stacks
+```
+
+Exemple :
+
+```txt id="1mlik4"
+Tabs
+├── Feed Stack
+├── Search Stack
+├── Messages Stack
+└── Profile Stack
+```
+
+---
+
+# 36. Ce que tu peux apprendre ensuite
 
 ## Drawer Navigation
 
@@ -462,40 +772,24 @@ Menu latéral.
 
 ## Deep Linking
 
-Navigation via URL mobile.
+Ouvrir un écran via URL.
 
 ---
 
-# Bonus : ajouter des icônes dans les tabs
+## Protected Routes
 
-Installer :
-
-```bash id="q8y0p4"
-npx expo install @expo/vector-icons
-```
-
-Puis :
-
-```jsx id="4sj8mc"
-import Ionicons from '@expo/vector-icons/Ionicons';
-```
-
-Et :
-
-```jsx id="90ypu5"
-tabBarIcon: ({ color, size }) => (
-  <Ionicons
-    name="home"
-    size={size}
-    color={color}
-  />
-)
-```
+Accès selon login.
 
 ---
 
-# Documentation officielle
+## TypeScript Navigation
 
-* [Bottom Tabs Navigator](https://reactnavigation.org/docs/bottom-tab-navigator?utm_source=chatgpt.com)
-* [Native Stack Navigator](https://reactnavigation.org/docs/native-stack-navigator?utm_source=chatgpt.com)
-* [Nesting Navigators](https://reactnavigation.org/docs/nesting-navigators?utm_source=chatgpt.com)
+Très utilisé en entreprise.
+
+---
+
+# 37. Documentation officielle
+
+* [React Navigation](https://reactnavigation.org?utm_source=chatgpt.com)
+* [Bottom Tabs](https://reactnavigation.org/docs/bottom-tab-navigator?utm_source=chatgpt.com)
+* [Native Stack](https://reactnavigation.org/docs/native-stack-navigator?utm_source=chatgpt.com)
