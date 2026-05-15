@@ -19,33 +19,7 @@ export async function initDatabase() {
       description TEXT NOT NULL,
       quantity INTEGER DEFAULT 0
     );
-
-    CREATE TABLE IF NOT EXISTS WishLists (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      owner_id INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      creation_date INTEGER NOT NULL,
-
-      FOREIGN KEY (owner_id)
-        REFERENCES Users(id)
-        ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS Wishlist_Products (
-      wishlist_id INTEGER NOT NULL,
-      product_id INTEGER NOT NULL,
-      list_order INTEGER,
-
-      PRIMARY KEY (wishlist_id, product_id),
-
-      FOREIGN KEY (wishlist_id)
-        REFERENCES WishLists(id)
-        ON DELETE CASCADE,
-
-      FOREIGN KEY (product_id)
-        REFERENCES Products(id)
-        ON DELETE CASCADE
-    );
+    
   `);
 }
 

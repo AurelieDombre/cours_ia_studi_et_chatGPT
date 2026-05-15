@@ -1,6 +1,7 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import { db, initDatabase, seedDatabase } from "@/database/database";
+import { router } from "expo-router";
 
 type TableInfo = {
   name: string;
@@ -65,10 +66,22 @@ export default function Index() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>SQLite Expo Demo</Text>
 
-      <View>
-        <form>
-          
-        </form>
+      <View style={styles.container}>
+        <Text style={styles.title}>CRUD SQLite</Text>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/users")}
+        >
+          <Text style={styles.buttonText}>Gestion des utilisateurs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/products")}
+        >
+          <Text style={styles.buttonText}>Gestion des produits</Text>
+        </TouchableOpacity>
       </View>
 
 
@@ -182,5 +195,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 2,
+  },
+
+  button: {
+    backgroundColor: "black",
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+
+  buttonText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
