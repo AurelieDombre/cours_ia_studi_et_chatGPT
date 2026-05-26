@@ -49,6 +49,14 @@ chatbot_bundle/
 └── README.md
 ```
 
+
+🧠 Règle simple pour ton architecture
+- core/ → cerveau (IA, orchestration, logique centrale)
+- services/ → outils externes (API, DB, stockage)
+- bots/ → comportements spécialisés
+- api/ → exposition HTTP
+
+
 ---
 
 # 2. Technologies utilisées
@@ -225,6 +233,15 @@ pip install vosk pyttsx3 sounddevice
 
 ---
 
+## Ajouter les dépendances au fichier requirements.txt
+Ajouter tout les paquets installé précédemment dans le fichier.
+
+Puis les installer :
+```shell
+pip install -r requirements.txt
+```
+
+
 # 7. Fichier .env
 
 Créer :
@@ -272,26 +289,349 @@ core/
 
 ---
 
-# 9. Gestion des toggles
+# 9. Gestion des toggles et de la configuration
 
-## toggle.py
+## config/ setting
 
 ```python
+# =========================================================
+# settings.py
+# =========================================================
+#
+# Ce fichier centralise toute la configuration globale
+# du projet.
+#
+# Son rôle :
+#
+# - charger les variables du .env
+# - convertir les valeurs correctement
+# - exposer des constantes réutilisables
+#
+# IMPORTANT :
+#
+# Aucun autre fichier du projet ne devrait utiliser
+# directement os.getenv().
+#
+# Toute la configuration doit passer par settings.py.
+#
+# =========================================================
+#
+# Exemple d'import :
+#
+# from config.settings import (
+#     USE_OLLAMA,
+#     USE_OPENAI,
+#     USE_VISION
+# )
+#
+# =========================================================
+
+
+# =========================================================
+# Import système
+# =========================================================
+
+import os
+
+
+# =========================================================
+# Chargement automatique du fichier .env
+# =========================================================
+#
+# load_dotenv() permet de charger les variables
+# d'environnement définies dans :
+#
+# .env
+#
+# Exemple :
+#
+# USE_OLLAMA=true
+# OLLAMA_MODEL=llama3
+#
+# =========================================================
+
+from dotenv import load_dotenv
+
+
+# =========================================================
+# Import du helper de conversion booléenne
+# =========================================================
+
+from backend.config.toggle import env_bool
+
+
+# =========================================================
+# Chargement du fichier .env
+# =========================================================
+
+load_dotenv()
+
+
+# =========================================================
+# Active/désactive Ollama
+# =========================================================
+#
+# Exemple :
+#
+# USE_OLLAMA=true
+#
+# Si la variable n'existe pas :
+#
+# default=True
+#
+# donc Ollama sera activé par défaut.
+# =========================================================
+
+USE_OLLAMA = env_bool(
+    os.getenv("USE_OLLAMA"),
+    default=True
+)
+
+
+# =========================================================
+# Active/désactive OpenAI
+# =========================================================
+
+USE_OPENAI = env_bool(
+    os.getenv("USE_OPENAI"),
+    default=False
+)
+
+
+# =========================================================
+# Active/désactive les fonctionnalités vision
+# =========================================================
+#
+# Exemple :
+#
+# analyse d'image
+# OCR
+# image captioning
+# modèles multimodaux
+#
+# =========================================================
+
+USE_VISION = env_bool(
+    os.getenv("USE_VISION"),
+    default=False
+)
+
+
+# =========================================================
+# Active/désactive les fonctionnalités audio
+# =========================================================
+#
+# Exemple :
+#
+# reconnaissance vocale
+# synthèse vocale
+# voice assistant
+#
+# =========================================================
+
+USE_AUDIO = env_bool(
+    os.getenv("USE_AUDIO"),
+    default=False
+)
+
+
+# =========================================================
+# Modèle Ollama utilisé par défaut
+# =========================================================
+#
+# Exemple dans .env :
+#
+# OLLAMA_MODEL=llama3
+#
+# Si aucune valeur n'existe :
+#
+# "llama3" sera utilisé.
+#
+# =========================================================
+
+OLLAMA_MODEL = os.getenv(
+    "OLLAMA_MODEL",
+    "llama3"
+)
+```
+
+
+## toggle.py
+Créer un fichier toggle.py dans le dossier config.
+```python
+# =========================================================
+# toggle.py
+# =========================================================
+#
+# Ce fichier contient des helpers utilitaires permettant
+# de convertir des variables d'environnement en booléens.
+#
+# Pourquoi ?
+#
+# Les variables d'environnement sont toujours lues
+# sous forme de chaînes de caractères :
+#
+# "true"
+# "false"
+# "1"
+# "0"
+#
+# et non comme de vrais booléens Python.
+#
+# Ce helper permet :
+#
+# - d'éviter les bugs
+# - de centraliser la logique de conversion
+# - de rendre le .env flexible
+# - d'avoir un système de toggles propre
+#
+# Exemple :
+#
+# USE_OLLAMA=true
+# USE_VISION=no
+#
+# deviennent :
+#
+# True
+# False
+#
+# =========================================================
+
+
+# =========================================================
+# Valeurs considérées comme True
+# =========================================================
+#
+# Toutes les valeurs de cet ensemble seront converties
+# en True.
+#
+# Exemple :
+#
+# "true"
+# "1"
+# "yes"
+# "on"
+#
+# =========================================================
+
 TRUE_SET = {"1", "true", "yes", "on"}
+
+
+# =========================================================
+# Valeurs considérées comme False
+# =========================================================
+#
+# Toutes les valeurs de cet ensemble seront converties
+# en False.
+#
+# Exemple :
+#
+# "false"
+# "0"
+# "no"
+# "off"
+#
+# =========================================================
+
 FALSE_SET = {"0", "false", "no", "off"}
 
 
-def env_bool(value: str, default=False):
+# =========================================================
+# Convertit une variable d'environnement en booléen
+# =========================================================
+#
+# Paramètres :
+#
+# value :
+# → valeur récupérée depuis os.getenv()
+#
+# default :
+# → valeur retournée si :
+#   - la variable n'existe pas
+#   - la valeur est invalide
+#
+# Retour :
+#
+# bool
+#
+# =========================================================
+#
+# Exemple :
+#
+# env_bool("true")  -> True
+# env_bool("false") -> False
+# env_bool("yes")   -> True
+# env_bool(None)    -> default
+#
+# =========================================================
+
+def env_bool(value: str | None, default: bool = False) -> bool:
+
+
+    # =====================================================
+    # Cas où la variable n'existe pas
+    # =====================================================
+    #
+    # os.getenv() peut retourner None si la variable
+    # n'est pas définie dans le .env.
+    #
+    # Dans ce cas :
+    #
+    # on retourne la valeur par défaut.
+    # =====================================================
+
     if value is None:
         return default
 
+
+    # =====================================================
+    # Normalisation de la chaîne
+    # =====================================================
+    #
+    # strip()
+    # → supprime les espaces inutiles
+    #
+    # lower()
+    # → transforme en minuscule
+    #
+    # Exemple :
+    #
+    # " TRUE "
+    #
+    # devient :
+    #
+    # "true"
+    # =====================================================
+
     v = value.strip().lower()
+
+
+    # =====================================================
+    # Vérifie si la valeur correspond à True
+    # =====================================================
 
     if v in TRUE_SET:
         return True
 
+
+    # =====================================================
+    # Vérifie si la valeur correspond à False
+    # =====================================================
+
     if v in FALSE_SET:
         return False
+
+
+    # =====================================================
+    # Valeur invalide ou inconnue
+    # =====================================================
+    #
+    # Exemple :
+    #
+    # env_bool("bonjour")
+    #
+    # Retourne la valeur par défaut.
+    # =====================================================
 
     return default
 ```
@@ -330,20 +670,79 @@ Architecture importante :
 ## Exemple simplifié
 
 ```python
+# Client LLM universel 
+
+# =========================================================
+# Activation des providers IA via variables d'environnement
+# =========================================================
+#
+# Ces variables permettent d'activer ou désactiver
+# dynamiquement un provider LLM.
+#
+# Exemple dans le fichier .env :
+#
+# USE_OLLAMA=true
+# USE_OPENAI=false
+# USE_MISTRAL=false
+# # exemple d'import de models : from config.settings import USE_OLLAMA
+# Il est recommandé d'utiliser env_bool()
+# pour une gestion plus robuste des booléens.
+# =========================================================
+
 import os
 import requests
 from openai import OpenAI
 from mistralai.client import MistralClient
 
+
 USE_OLLAMA = os.getenv("USE_OLLAMA") == "true"
 USE_OPENAI = os.getenv("USE_OPENAI") == "true"
 USE_MISTRAL = os.getenv("USE_MISTRAL") == "true"
 
-
+# =========================================================
+# Classe principale de gestion des LLM
+# =========================================================
+#
+# Cette classe agit comme une abstraction des providers IA.
+#
+# Elle permet :
+#
+# - d'utiliser Ollama en local
+# - d'utiliser OpenAI
+# - d'utiliser Mistral
+# - de changer de provider sans modifier le reste du code
+#
+# Le backend n'appelle qu'une seule méthode :
+#
+# client.ask(prompt)
+#
+# Puis le provider approprié est choisi automatiquement.
+# =========================================================
 class LLMClient:
 
+    # =====================================================
+    # Méthode principale appelée par le backend
+    # =====================================================
+    #
+    # Paramètres :
+    #
+    # prompt (str)
+    # → texte envoyé au modèle IA
+    #
+    # Retour :
+    #
+    # str
+    # → réponse générée par le provider sélectionné
+    # =====================================================
     def ask(self, prompt: str):
 
+        # =================================================
+        # Provider Ollama local
+        # =================================================
+        #
+        # Si USE_OLLAMA=true dans le .env
+        # alors la requête est envoyée au serveur Ollama.
+        # =================================================
         if USE_OLLAMA:
             return self.ask_ollama(prompt)
 
@@ -355,8 +754,39 @@ class LLMClient:
 
         return "No provider enabled"
 
+    # =====================================================
+    # Appel du serveur Ollama local
+    # =====================================================
+    #
+    # Cette méthode communique avec l'API HTTP d'Ollama.
+    #
+    # URL par défaut :
+    #
+    # http://localhost:11434
+    #
+    # Endpoint utilisé :
+    #
+    # /api/generate
+    #
+    # Paramètres envoyés :
+    #
+    # - model :
+    #   modèle Ollama utilisé
+    #
+    # - prompt :
+    #   texte envoyé au modèle
+    #
+    # - stream :
+    #   False = réponse complète
+    #   True  = streaming token par token
+    #
+    # Retour :
+    #
+    # str
+    # → texte généré par Ollama
+    # =====================================================
     def ask_ollama(self, prompt):
-
+        # Requête HTTP POST vers Ollama avec le modèle utilisé, le prompts et le streaming : False :→ réponse complète d'un coup / True : → réponse token par token
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
@@ -376,6 +806,23 @@ class LLMClient:
 ## schema.py
 
 ```python
+# =====================================================
+# Schemas Pydantic utilises par l'API.
+# =====================================================
+
+# Pydantic garantit :
+# - la structure des données,
+# - la validation automatique,
+# - des échanges frontend/backend fiables.
+
+# Un schema sert a definir clairement :
+# - ce que l'API attend en entree
+# - ce qu'elle renvoie en sortie
+
+# FastAPI s'appuie dessus pour :
+# - valider les donnees recues
+# - documenter automatiquement l'API dans /docs
+
 from pydantic import BaseModel
 from typing import List
 
@@ -392,10 +839,20 @@ class ChatRequest(BaseModel):
 ---
 
 # 13. Création du moteur de chat
+Créer le fichier dans : backend/core/chat_engine.py
 
 ## chat_engine.py
 
+ChatEngine fait exactement ça :
+
+- il reçoit un message
+- il construit un prompt
+- il appelle le LLMClient
+- il sert de cœur de génération de réponse
+
 ```python
+
+
 from core.llm_client import LLMClient
 
 
