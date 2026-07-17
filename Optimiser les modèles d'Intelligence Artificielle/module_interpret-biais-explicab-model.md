@@ -26,6 +26,12 @@ Le but du cours est d'expliquer comment rendre un modèle **compréhensible**, *
 
 # I. Pourquoi l'interprétabilité est-elle devenue indispensable ?
 
+L’interprétabilité se définit comme la capacité pour un humain à comprendre les raisons d’une décision d’un modèle. Ce critère est devenu prépondérant pour de nombreuses raisons.
+
+Au niveau scientifique, le développement des connaissances et le progrès reposent sur la compréhension profonde du phénomène étudié. Il est donc inimaginable pour un data scientist de laisser fonctionner un modèle de machine learning sans chercher à connaître les variables influentes, sans chercher à vérifier la cohérence des résultats à la lumière des connaissances métier du domaine, … Il s’agit de comprendre, d’avoir confiance et d’avoir une preuve de la consistance du modèle.
+
+Au niveau éthique : imaginons une situation dans laquelle un individu est atteint d’un cancer. Il se voit refuser son intervention chirurgicale à cause de la seule décision d’un algorithme. De plus, par nature cet algorithme sera complexe et alors aucun chirurgien ne sera en capacité de justifier une telle décision. Cette situation n’est pas acceptable.
+
 Il y a trois grandes raisons.
 
 ## 1. Une obligation juridique
@@ -37,6 +43,7 @@ Deux réglementations sont importantes :
 ### Le RGPD
 
 Le RGPD donne aux personnes concernées le droit d'obtenir une explication lorsqu'une décision importante est prise automatiquement.
+l’article 22 de la RGPD (Règlement Général sur la Protection des Données) prévoit qu’une personne ne doit pas faire l’objet d’une décision fondée exclusivement sur un traitement automatisé et émanant uniquement de la décision d’une machine.
 
 Exemple :
 
@@ -289,12 +296,13 @@ Pourquoi ce client a-t-il obtenu un score de risque élevé ?
 ---
 
 ## SHAP
-
+La mise en œuvre de SHAP repose sur une méthode d’estimation des valeurs de Shapley. Il existe différentes méthodes d’estimation comme le KernelSHAP (méthode inspirée de LIME) ou le TreeSHAP (méthode à base d’arbres de décision).
 SHAP est aujourd'hui l'un des outils les plus utilisés.
 
 Son principe :
 
 Chaque variable reçoit une contribution.
+Pour un individu donné, la valeur de Shapley d’une variable (ou de plusieurs variables) est sa contribution à la différence entre la valeur prédite par le modèle et la moyenne des prédictions de tous les individus.
 
 Exemple :
 
@@ -316,6 +324,7 @@ SHAP est très fiable et fournit des explications cohérentes.
 LIME adopte une approche différente.
 
 Il construit un modèle très simple autour du cas étudié.
+un modèle local qui cherche à expliquer la prédiction d’un individu par analyse de son voisinage
 
 Puis il observe quelles variables influencent la décision.
 
@@ -323,6 +332,9 @@ LIME est :
 
 * plus rapide,
 * compatible avec presque tous les modèles.
+* Interprétable. Il fournit une compréhension qualitative entre les variables d’entrée et la réponse. Les relations entrées-sortie sont faciles à comprendre.
+* Simple localement. Le modèle est globalement complexe, il faut alors chercher des réponses localement plus simples.
+* Agnostique. Il est capable d’expliquer n’importe quel modèle de machine learning.
 
 En revanche, ses résultats peuvent être moins stables que ceux de SHAP.
 
@@ -338,6 +350,301 @@ En revanche, ses résultats peuvent être moins stables que ceux de SHAP.
 | Explications robustes   | Explications locales approximatives |
 
 ---
+
+Bien sûr. C'est une notion qui pose souvent problème au début, car **SHAP et LIME font la même chose, mais pas de la même manière**.
+
+Je vais te l'expliquer avec un exemple très simple.
+
+---
+
+# Imaginons une banque
+
+Tu demandes un prêt bancaire.
+
+Le modèle d'IA répond :
+
+❌ **Prêt refusé**
+
+Tu demandes :
+
+> **"Pourquoi ?"**
+
+Le modèle est un énorme réseau de neurones.
+
+Personne ne peut facilement suivre tous ses calculs.
+
+On utilise donc **LIME** ou **SHAP** pour obtenir une explication.
+
+---
+
+# LIME : "Je regarde autour de toi"
+
+Imagine que tu regardes une montagne.
+
+Tu ne peux pas comprendre toute la montagne.
+
+Alors tu observes seulement **l'endroit où tu te trouves**.
+
+C'est exactement ce que fait LIME.
+
+Il dit :
+
+> "Je ne vais pas essayer de comprendre tout le modèle.
+>
+> Je vais seulement comprendre pourquoi CETTE personne a été refusée."
+
+---
+
+## Comment fait LIME ?
+
+Il crée plein de clients **qui ressemblent au tien**.
+
+Exemple :
+
+Ton dossier :
+
+| Âge    | Salaire | Dettes |
+| ------ | ------- | ------ |
+| 30 ans | 2000 €  | 900 €  |
+
+LIME invente des dossiers proches :
+
+| Âge    | Salaire | Dettes |
+| ------ | ------- | ------ |
+| 31 ans | 2000 €  | 900 €  |
+| 30 ans | 2100 €  | 900 €  |
+| 30 ans | 1900 €  | 850 €  |
+| 29 ans | 2000 €  | 950 €  |
+
+Puis il regarde :
+
+> "Quand je change un peu le salaire, que se passe-t-il ?"
+
+> "Quand je baisse les dettes, que se passe-t-il ?"
+
+À partir de ces essais, il construit **un petit modèle très simple** (souvent une régression linéaire ou un arbre de décision).
+
+Il conclut par exemple :
+
+```
+Refus du prêt
+
++ Dettes élevées
+- Salaire faible
++ Peu d'ancienneté
+```
+
+LIME ne comprend donc **que ton cas**, pas tout le modèle.
+
+---
+
+# Une image pour retenir LIME
+
+Imagine Google Maps.
+
+Tu fais un zoom.
+
+```
+France
+      ↓
+Paris
+      ↓
+Ton quartier
+      ↓
+Ta rue
+```
+
+LIME regarde uniquement **ta rue**.
+
+Pas toute la France.
+
+👉 **LIME = explication locale.**
+
+---
+
+# SHAP : "Chaque variable reçoit une note"
+
+SHAP fait quelque chose de différent.
+
+Il ne construit pas un petit modèle.
+
+Il cherche :
+
+> **"Combien chaque variable a-t-elle contribué à la décision ?"**
+
+Chaque variable reçoit une sorte de "score".
+
+---
+
+Prenons notre client.
+
+Le modèle donne :
+
+```
+Risque = 80 %
+```
+
+SHAP explique :
+
+| Variable            | Contribution |
+| ------------------- | ------------ |
+| Salaire             | −20 %        |
+| Dettes              | +40 %        |
+| Âge                 | +10 %        |
+| Historique bancaire | +15 %        |
+| Épargne             | −5 %         |
+
+On additionne :
+
+```
+40
++10
++15
+-20
+-5
+------
+40 %
+```
+
+Chaque variable pousse la décision :
+
+➡ vers le refus
+
+ou
+
+➡ vers l'acceptation.
+
+---
+
+# Une image pour retenir SHAP
+
+Imagine que cinq amis portent une table.
+
+```
+Alice porte 40 %
+
+Paul porte 20 %
+
+Léa porte 15 %
+
+Tom porte 15 %
+
+Emma porte 10 %
+```
+
+Tu peux dire exactement :
+
+> **Qui a fait le plus d'effort ?**
+
+SHAP fait pareil.
+
+Il mesure la contribution de **chaque variable** dans la décision finale.
+
+---
+
+# La grande différence
+
+## LIME
+
+Il dit :
+
+> "Je vais simplifier le modèle autour de CE client."
+
+Il fabrique un petit modèle local.
+
+Il est rapide.
+
+Mais si tu recommences plusieurs fois, l'explication peut changer.
+
+---
+
+## SHAP
+
+Il dit :
+
+> "Je vais calculer précisément la contribution de chaque variable."
+
+Il ne simplifie pas le modèle.
+
+Il utilise une méthode mathématique inspirée de la **théorie des jeux** (les valeurs de Shapley), qui répartit "le mérite" ou "la responsabilité" entre toutes les variables.
+
+Ses explications sont plus fiables.
+
+Mais elles demandent beaucoup plus de calculs.
+
+---
+
+# Exemple concret
+
+Le modèle refuse ton prêt.
+
+## LIME répond
+
+> "Autour de ton dossier, j'observe que les dettes et le salaire expliquent principalement le refus."
+
+Il donne une **explication approximative mais rapide**.
+
+---
+
+## SHAP répond
+
+```
+Salaire      : -18 %
+Dettes       : +41 %
+Âge          : +8 %
+Épargne      : -6 %
+Historique   : +12 %
+```
+
+Tu sais précisément **combien chaque variable a influencé la décision**.
+
+---
+
+# Une analogie très simple
+
+Imagine un professeur qui met une note de **14/20** à un exposé.
+
+### LIME
+
+Le professeur dit :
+
+> "Globalement, tu as perdu des points à cause de ton introduction et de ta conclusion."
+
+C'est une explication simple et locale.
+
+---
+
+### SHAP
+
+Le professeur détaille exactement :
+
+* Introduction : **−2 points**
+* Contenu : **+8 points**
+* Illustrations : **+4 points**
+* Conclusion : **−1 point**
+* Questions : **+5 points**
+
+Tu connais la contribution de chaque partie à la note finale.
+
+---
+
+# Le tableau à retenir pour l'examen
+
+| LIME                                            | SHAP                                       |
+| ----------------------------------------------- | ------------------------------------------ |
+| Explique une décision locale                    | Explique une décision locale               |
+| Crée un petit modèle simple autour de l'exemple | Calcule la contribution de chaque variable |
+| Rapide                                          | Plus lent                                  |
+| Approximation                                   | Très précis                                |
+| Les résultats peuvent varier                    | Les résultats sont stables                 |
+
+## 🎓 L'astuce pour ne plus les confondre
+
+* **LIME = Loupe** 🔍 → il **zoome** sur un seul exemple et construit une explication locale.
+* **SHAP = Score** 📊 → il attribue un **score de contribution** à chaque variable pour expliquer la décision.
+
+Si tu retiens **"LIME = loupe locale"** et **"SHAP = score de chaque variable"**, tu auras déjà compris l'essentiel demandé dans la plupart des examens.
+
 
 # VII. Les cartes de saillance
 
