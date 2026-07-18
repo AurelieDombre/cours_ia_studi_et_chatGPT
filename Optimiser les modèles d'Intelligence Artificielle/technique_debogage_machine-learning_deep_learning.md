@@ -1,696 +1,747 @@
-# Résumé détaillé et pédagogique – Techniques de débogage pour les modèles de Machine Learning et Deep Learning
+# Techniques de débogage pour les modèles de Machine Learning et Deep Learning 
 
-Ce cours explique **comment trouver et corriger les bugs dans un modèle d'IA** lorsqu'il produit de mauvais résultats. Contrairement à un programme classique, un modèle d'IA ne plante pas forcément : il continue souvent à fonctionner mais donne des prédictions erronées. 
+![Main](https://images.openai.com/static-rsc-4/R0CjogpfR6l8QQEw9traHbRca3NyKZ7t2lLR2gKS6kuVWCez-Zv71O2rkUP9Ku2z7XYRfgQZbB2u503yqwL9QjTmoiWrBdJYzhKnulU1uUphsU-2BaSsb2b87IyHTxWyx45Un7RvLcZud0mLsxeRBbT80UwFgAg6gOxBdx_edx4oYVmMYQA4R64rJW1M9yT0?purpose=fullsize)
 
----
+### L'idée centrale du cours
 
-# I. Pourquoi le débogage en IA est-il difficile ?
+Le message principal est simple :
 
-Dans un logiciel classique :
+En IA, la plupart des erreurs ne viennent pas du modèle lui-même, mais de l'ensemble du pipeline.
 
-```text
-Erreur -> message d'erreur -> correction
-```
+Un problème peut provenir :
 
-Dans l'IA :
+* des données,
 
-```text
-Erreur -> baisse de performance -> cause inconnue
-```
+* du prétraitement,
 
-Les erreurs peuvent venir de :
+* des hyperparamètres,
 
-* données,
-* prétraitement,
-* architecture du modèle,
-* hyperparamètres,
-* environnement d'exécution. 
+* de l'architecture,
 
-L'IA est aussi **stochastique** :
+* de l'environnement d'exécution,
 
-* initialisation aléatoire,
-* batchs différents,
-* augmentation de données,
-* ordre de lecture variable.
+* ou du code.
 
-Deux entraînements peuvent produire des résultats légèrement différents. 
+Le débogage IA consiste donc à isoler méthodiquement la cause racine plutôt qu'à modifier le modèle au hasard. Le cours insiste sur une démarche scientifique : observation → hypothèses → expérimentation → analyse → itération. La reproductibilité, l'isolation des composants et la traçabilité des expériences sont présentées comme indispensables pour localiser rapidement l'origine d'un bug. La simplification progressive, l'ablation, les comparaisons contrôlées et les tests unitaires adaptés à l'IA font partie des stratégies clés. En Deep Learning, il faut en plus diagnostiquer les problèmes de gradient, ajuster batch size et learning rate, doser la régularisation et maîtriser le transfert learning. Le pipeline d'IA couvre la collecte, la préparation, le feature engineering, l'entraînement, la validation, le déploiement et l'inférence. Le débogage stochastique rappelle que les résultats peuvent varier d'une exécution à l'autre à cause des batchs, seeds ou augmentations de données, d'où la nécessité d'analyser des distributions de résultats plutôt qu'un seul run. Le cycle itératif complet comprend aussi la documentation systématique de chaque test.
 
----
+techniq-debog-model-mach-learn.pdf.
 
-# II. La règle d'or : raisonner comme un enquêteur
+### I. Pourquoi le débogage IA est plus difficile que le débogage classique ?
 
-Le cours compare le data scientist à un enquêteur.
+Dans un logiciel classique, un bug provoque souvent :
 
-Quand un modèle se comporte mal, il faut considérer que :
+* un crash,
 
-> Toute la chaîne est suspecte.
+* une exception,
 
-On appelle cette chaîne le **pipeline IA** :
+* un message d'erreur explicite.
 
-```text
-Collecte des données
-        ↓
-Prétraitement
-        ↓
-Feature Engineering
-        ↓
-Entraînement
-        ↓
-Validation
-        ↓
-Déploiement
-        ↓
-Inférence
-```
-
-Une erreur peut apparaître à n'importe quel niveau. 
-
----
-
-# III. Le cycle de débogage à connaître par cœur
-
-C'est probablement la partie la plus importante du cours.
-
-Le diagnostic suit toujours le même cycle :
-
-## 1. Observation
-
-On collecte tous les symptômes :
-
-* baisse de précision,
-* erreurs étranges,
-* catégories mal prédites,
-* perte de performance.
-
----
-
-## 2. Hypothèses
-
-On imagine plusieurs causes possibles.
-
-Exemple :
-
-* problème de données,
-* bug dans le prétraitement,
-* mauvais hyperparamètre.
-
----
-
-## 3. Expérimentation
-
-On modifie **une seule chose à la fois**.
-
-C'est essentiel.
-
-Sinon on ne sait pas ce qui a réellement provoqué le changement. 
-
----
-
-## 4. Analyse
-
-On mesure l'effet de la modification.
-
----
-
-## 5. Itération
-
-Si le problème persiste :
-
-on recommence le cycle.
-
----
-
-## 6. Documentation
-
-On conserve l'historique de tous les essais. 
-
----
-
-# IV. Les trois piliers d'un bon débogage
-
-## A. Isolation
-
-Tester chaque composant séparément.
-
-Exemple :
-
-```text
-Données seules
-Prétraitement seul
-Modèle seul
-```
-
-Ainsi on trouve rapidement l'origine du problème. 
-
----
-
-## B. Reproductibilité
-
-Pouvoir refaire exactement une expérience.
-
-Pour cela :
-
-* fixer les seeds aléatoires,
-* figer les versions des bibliothèques,
-* conserver les données utilisées. 
-
----
-
-## C. Traçabilité
-
-Conserver :
-
-* les paramètres,
-* les métriques,
-* les versions du modèle.
-
-Des outils comme MLflow ou DVC sont souvent utilisés. 
-
----
-
-# V. Les stratégies de débogage
-
-## 1. Simplification progressive
-
-Quand le système est trop complexe :
-
-on enlève progressivement des éléments.
-
-Exemple :
-
-```text
-10 couches
-↓
-8 couches
-↓
-6 couches
-↓
-4 couches
-```
-
-Si le bug disparaît à partir de 6 couches :
-
-le problème est probablement lié aux couches supprimées. 
-
----
-
-## 2. Ablation
-
-L'ablation consiste à retirer :
-
-* une variable,
-* une couche,
-* un module,
-
-puis observer ce qui se passe.
-
-Exemple :
-
-On supprime la variable "âge".
-
-Si les performances chutent :
-
-→ elle était importante.
-
-Si le bug disparaît :
-
-→ elle était peut-être responsable du problème. 
-
----
-
-## 3. Comparaison
-
-Comparer :
-
-* version qui fonctionne,
-* version qui échoue.
-
-Exemple :
-
-```text
-v2.2 : OK
-v2.3 : Bug
-```
-
-On cherche ce qui a changé entre les deux versions. 
-
----
-
-## 4. Tests unitaires
-
-Tester chaque brique séparément :
-
-```text
-Lecture des données
-✓
-
-Encodage
-✓
-
-Normalisation
-✓
-
-Prédiction
-✓
-```
-
-Cela permet de détecter les erreurs locales rapidement. 
-
----
-
-# VI. Débogage des données
-
-Le cours insiste énormément :
-
-> La majorité des problèmes viennent des données.
-
-Avant d'accuser le modèle :
-
-toujours vérifier les données. 
-
----
-
-## Anomalies de données
-
-Chercher :
-
-* valeurs aberrantes,
-* incohérences,
-* erreurs de saisie,
-* données corrompues.
-
-Outils :
-
-* histogrammes,
-* boxplots,
-* scatter plots. 
-
----
-
-## Outlier
-
-Définition :
-
-Observation très éloignée du comportement normal.
-
-Exemple :
-
-```text
-Tous les clients : 50 €
-Un client : 50 000 €
-```
-
-C'est un outlier.
-
-Il peut révéler :
-
-* une erreur,
-* un événement exceptionnel,
-* un bug. 
-
----
-
-# VII. Débogage du prétraitement
-
-Le prétraitement est souvent responsable de bugs invisibles.
+En IA, le modèle peut continuer à fonctionner tout en produisant de mauvaises prédictions.
 
 Exemples :
 
-## Mauvais encodage
+* la précision baisse progressivement,
 
-```text
-Rouge = 1
-Bleu = 2
-Vert = 3
-```
+* certaines catégories deviennent mauvaises,
 
-Le modèle croit alors que :
+* les résultats changent d'un entraînement à l'autre,
 
-```text
-Vert > Bleu > Rouge
-```
+* le problème n'apparaît que sur certains segments.
 
-alors que ce n'est pas vrai.
+La difficulté vient notamment de la stochasticité :
 
----
+* initialisation aléatoire,
 
-## Data Leakage
+* ordre des batchs,
 
-Très important pour l'examen.
+* augmentation de données,
 
-Le modèle reçoit accidentellement la réponse pendant l'entraînement.
+* sampling.
+
+👉 On raisonne donc souvent en tendances statistiques plutôt qu'en cas uniques.
+
+techniq-debog-model-mach-learn.pdf
+
+### II. Le pipeline d'IA : la carte mentale à retenir
+
+![Machine Learning Pipeline: Data Collection to Model Deployment | Ankur Ranjan posted on the topic | LinkedIn](https://images.openai.com/static-rsc-4/4z49EmvtT1L7nXIrbOUyoY3ko5jVZwoUQb_pUoO3_EURFjhN__CPvqUJUeqVQlIczO6LpMsyJgu08nh_GESh2FqUlw1VRdSlllu9HhQHZ49KjlIqnGi0JE5ot2i-D3M-fDRwM9pQuwWEstA_c6GdFf3Js2ZjFLYF1kOT_JevjCEAyfHpeDoDkLCq35T7PLLO?purpose=fullsize)
+
+Le pipeline complet est :
+
+Collecte des données
+
+Préparation / nettoyage
+
+Feature engineering
+
+Entraînement
+
+Validation
+
+Déploiement
+
+Inférence
+
+Chaque maillon peut contenir une erreur.
+
+Exemple classique du cours :
+
+Le modèle médical se dégrade après un changement de scanner ; la cause réelle est un prétraitement de couleur devenu incorrect.
+
+
+
+💡 À retenir : Toujours tester chaque étape séparément.
+
+### III. La méthode de débogage en 6 étapes
+
+![Writing More Successful Machine Learning Research Papers | by Prof. Marc Aubreville | TDS Archive | Medium](https://images.openai.com/static-rsc-4/oXGD5wb_pPaNIerd_163hzoJCOulxRN7xhECo3SwiExL8jnP5gyoZgA6fJLXJDFTliZWbwrSyJPHb3ogHnBsY4nHlv2DsAn6hnt1uedPAnF-FcA20XBVoHw6x1oeKp27JOMFYx3m5jPcz0t16rUvpxvOznoiehAZOKa57szZaNGfrlPN2IGr0J8RuHAXuczq?purpose=fullsize)
+
+C'est probablement la partie la plus importante du cours.
+
+1. Observation
+
+Noter précisément les symptômes, dates, logs, métriques.
+
+2. Hypothèses
+
+Lister plusieurs causes possibles (données, code, modèle, infra).
+
+3. Expérimentation
+
+Modifier un seul élément à la fois.
+
+4. Analyse
+
+Mesurer l'effet du changement.
+
+5. Itération
+
+Recommencer si nécessaire.
+
+6. Documentation
+
+Garder l'historique de tous les essais.
+
+> Attention /!\ :
+Ne jamais changer plusieurs choses en même temps.
+Sinon, on ne sait plus ce qui a réellement amélioré ou dégradé le modèle.
+
+
+### IV. Reproductibilité : la règle d'or
+
+![5 Reproducible ML Habits: Seeds to Dataset Locks | by Vectorlane | Medium](https://images.openai.com/static-rsc-4/m1JKrHc3dggDCr9LpIWH8lo8O45CjiRg1SBvZeu6L14dulTquWNR0sLjT7QWb3p8n9dH2T9jtJLG2vmFr1yE1K3ksfiVA_bnq7immaJqZ7vs86a0SOtUC5O3NMve2qprLEvEQc3qfzhI6zTtQUZy5s4qXjJljj-b6RsrcGZ26MJGren20FNvLGb_HJQEW-ui?purpose=fullsize)
+
+Pour pouvoir retrouver un bug, il faut pouvoir rejouer exactement l'expérience.
+
+Le cours recommande :
+
+* fixer les seeds aléatoires,
+
+* geler les versions logicielles,
+
+* versionner les données,
+
+* journaliser les expériences (MLflow, DVC, etc.),
+
+* sauvegarder les checkpoints.
+
+Exemple marquant :
+
+Une équipe d'assurance a découvert qu'un changement d'heure d'hiver décalait les timestamps et faussait les prédictions. Sans environnement reproductible, le bug serait resté invisible.
+
+
+💡 Mémo : SVDJ = Seeds, Versions, Données, Journalisation.
+
+### V. Stratégies de débogage systématique
+
+### 1. Simplification progressive
+
+![The Black Box Problem: Why AI Must Learn to Explain Itself | by Iqra Naeem | Medium](https://images.openai.com/static-rsc-4/Ncybs6zqTfOYinbmGHoZmvGiYJcQmqym0eQB6XvP6ARvssCQC7eK9TE_fnfgzxt80TU-LS_gbloPGA6MaZuqjSNIpH8Np8TzupwpZeH7jh4ieBFudSSANZHxRmPp4ANlRjFX9sZE8-Jv_gruofjvFFzW_Zkb34k0gO8zqOrWJGf3CH5SKwyxBnzSJZZbXjGB?purpose=fullsize)
+
+Quand le système est trop complexe, on le réduit progressivement.
+
+On peut enlever :
+
+* des features,
+
+* des couches,
+
+* des modules,
+
+* des transformations.
+
+Si le bug disparaît après suppression d'un composant, ce composant devient suspect.
+
+Exemple du cours :
+
+Un surapprentissage n'apparaissait qu'à partir d'une certaine profondeur de réseau ; la vraie cause était une mauvaise gestion du dropout dans les couches profondes.
+
+
+### 2. Ablation
+
+Définition :
+
+Retirer une composante et observer l'effet.
 
 Exemple :
 
-Pour prédire :
+* retirer la feature revenu,
 
-```text
-Va-t-il acheter ?
-```
+* retirer une couche CNN,
 
-On lui donne indirectement une variable qui révèle déjà la réponse.
+* retirer un module d'attention.
 
-Résultat :
+Si l'erreur disparaît → la composante était probablement impliquée.
 
-Performances artificiellement excellentes. 
 
----
 
-## Bugs silencieux
+### 3. Comparaisons contrôlées
 
-Ce sont les plus dangereux.
+Comparer :
+
+| Version A  | Version B |
+| ---------- | --------- |
+| fonctionne | échoue    |
+
+Puis identifier la seule différence significative.
+
+Très utile après une mise à jour de modèle ou de pipeline.
+
+
+### VI. Débogage des données (la cause n°1)
+
+![Tools for Data Diagnosis, Exploration, Transformation • dlookr](https://images.openai.com/static-rsc-4/LoARbGnQFPcdfF3QbxmV1WmL3zcOxpR6EM-8plyG6owv3K5mTy98hJ-B2-a97aI-vMiMQnDjKFSycLvSLuX-MYpawbDFW54WPHpCBpDdydXyTfA-urkd2wFPbREpsXc2DZ8adG3jW5WmGYxahUBJta9ljnfA4P0tEU0tlAlpg0qGB8N2UB4fN-kRGPNVHmaR?purpose=fullsize)
+
+Le cours affirme que la majorité des bugs ML viennent des données.
+
+### À vérifier systématiquement
+
+* Valeurs manquantes
+
+* Outliers (valeurs extrêmes)
+
+* Doublons
+
+* Types incorrects
+
+* Catégories incohérentes
+
+* Biais de collecte
+
+* Data leakage
+
+### Outlier
+
+Observation très éloignée de la tendance normale.
+
+Exemple :
+
+| Client | Dépense  |
+| ------ | -------- |
+| A      | 120 €    |
+| B      | 135 €    |
+| C      | 20 000 € |
+
+Le client C est un outlier.
+
+Il peut signaler :
+
+* une erreur de saisie,
+
+* une fraude,
+
+* un événement exceptionnel.
+
+### Data leakage (très important pour l'examen)
+
+La cible ou une information du futur fuit dans les features.
+
+Exemple :
+
+On utilise la variable "montant remboursé après le prêt" pour prédire si le prêt sera remboursé.
+
+Le modèle triche et obtient des performances artificiellement excellentes.
+
+
+
+### Bugs silencieux du prétraitement
+
+Ils ne provoquent aucun crash.
 
 Exemples :
 
 * normalisation appliquée deux fois,
-* colonne renommée,
-* changement de librairie.
 
-Le modèle continue à fonctionner mais devient progressivement mauvais. 
+* colonnes inversées,
 
----
+* mapping catégoriel incorrect,
 
-# VIII. Déséquilibre de classes
+* changement discret de librairie.
 
-Situation classique :
+Le seul symptôme est souvent une dérive lente des performances.
 
-```text
-99 % non-fraude
-1 % fraude
-```
+### VII. Déséquilibre de classes
 
-Le modèle prédit toujours :
+![The Metrics Are Lying — A Hands-On Guide to Avoiding Data Illusions | by Aria Lucent | Data Science Collective | Medium](https://images.openai.com/static-rsc-4/VialnANZesjqzA5diLnwYXx7dHibxHpKxTcuOTU8K19ccZjB8SUDk194_ZSQhHsEzwHhtFgs_wxr4qiBRoIkio_rOxvkc-fxDK7rYtqlaZ7hzo0t6QW9oj1bOfxAf8a6yGSCfI23J1MpXD7995wem5lXySFuZ_Uj8GepPcrUAYwpOtdKSZSfQhz97sPhK0Jw?purpose=fullsize)
 
-```text
-Non fraude
-```
+Problème fréquent :
 
-et semble avoir :
+| Classe     | Nombre |
+| ---------- | ------ |
+| Non fraude | 99 000 |
+| Fraude     | 1 000  |
 
-```text
-99 % de précision
-```
+Le modèle peut prédire toujours "non fraude" et obtenir 99 % d'accuracy.
 
-alors qu'il est inutile.
-
-Il faut analyser :
+Le cours recommande de regarder :
 
 * précision,
+
 * rappel,
+
 * F1-score,
-* matrice de confusion. 
+
+* matrice de confusion.
+---
+### Solutions
+---
+* SMOTE (Synthetic Minority Over-sampling Technique)
+
+SMOTE est une technique de sur-échantillonnage qui crée de nouvelles données artificielles pour la classe minoritaire.
+
+Comment ça fonctionne ?
+
+Au lieu de copier les exemples existants, SMOTE génère de nouveaux exemples similaires à partir des données déjà présentes.
+
+Exemple
+
+Avant :
+
+Fraude :
+A
+B
+C
+
+Après SMOTE :
+
+Fraude :
+A
+B
+C
+D (créé)
+E (créé)
+F (créé)
+
+Le modèle dispose alors de davantage d'exemples de fraude pour apprendre.
+
+- Avantages
+Équilibre les classes.
+Évite de simplement dupliquer les données.
+Améliore souvent la détection de la classe rare.
+- Inconvénient
+    Les données créées sont artificielles : si les données de départ sont de mauvaise qualité, SMOTE peut aussi créer des exemples peu représentatifs.
+
+---
+* Sous-échantillonnage (Under-sampling)
+
+Le sous-échantillonnage consiste à réduire le nombre d'exemples de la classe majoritaire.
+
+Exemple
+
+Avant :
+
+Normales : 10 000
+Fraudes :   100
+
+Après sous-échantillonnage :
+
+Normales : 500
+Fraudes :  100
+
+Les deux classes deviennent plus équilibrées.
+
+- Avantages
+Très simple à mettre en œuvre.
+Réduit le temps d'entraînement.
+
+- Inconvénient
+
+    On supprime des données, donc on peut perdre des informations importantes.
 
 ---
 
-## Solutions
+* pondération de la loss (Loss weighting)
+  Au lieu de modifier les données, on modifie la fonction de perte (loss) pour donner plus d'importance aux erreurs sur la classe minoritaire.
 
-* sur-échantillonnage,
-* sous-échantillonnage,
-* SMOTE,
-* pondération de la loss. 
+>Exemple
+Si le modèle se trompe :
+sur une transaction normale → petite pénalité ;
+sur une fraude → grosse pénalité.
 
----
+Le modèle apprend donc à faire plus attention aux cas rares.
 
-# IX. Débogage des algorithmes
-
-## Sous-apprentissage (Underfitting)
-
-Le modèle est trop simple.
-
-Symptômes :
-
-```text
-Train faible
-Validation faible
-```
-
-Le modèle ne comprend pas le problème. 
+- Avantages
+    Aucune donnée n'est supprimée ou créée.
+    Très efficace avec de nombreux algorithmes modernes.
+- Inconvénient
+    Il faut choisir correctement les poids, sinon le modèle peut surcorriger et produire trop de faux positifs.
 
 ---
+
+* algorithmes spécialisés
+Certains algorithmes sont conçus pour mieux gérer les jeux de données déséquilibrés.
+
+>Exemples
+XGBoost avec des poids de classes (scale_pos_weight).
+Random Forest avec class_weight.
+Balanced Random Forest.
+EasyEnsemble.
+
+Ces modèles tiennent naturellement compte du déséquilibre pendant l'entraînement.
+
+- Avantages
+    Souvent plus performants sur les classes rares.
+    Peu de modifications à apporter aux données.
+- Inconvénient
+ Ils peuvent être plus complexes à configurer et nécessitent un bon réglage des paramètres.
+
+
+⚠️ Toujours valider sur un jeu de test indépendant après rééquilibrage.
+
+---
+# 🎓 À retenir pour l'examen
+
+| Solution                    | Principe                                                        | Idée clé                                           |
+| --------------------------- | --------------------------------------------------------------- | -------------------------------------------------- |
+| **SMOTE**                   | Créer de nouveaux exemples artificiels de la classe minoritaire | ➜ **Ajouter des données**                          |
+| **Sous-échantillonnage**    | Supprimer des exemples de la classe majoritaire                 | ➜ **Retirer des données**                          |
+| **Pondération de la loss**  | Donner plus de poids aux erreurs sur la classe rare             | ➜ **Punir davantage les erreurs importantes**      |
+| **Algorithmes spécialisés** | Utiliser des modèles adaptés aux données déséquilibrées         | ➜ **Choisir un algorithme conçu pour ce problème** |
+
+### 💡 Astuce pour mémoriser
+
+* **SMOTE** = **S**ynthétiser → **Créer** des données.
+* **Sous-échantillonnage** = **Supprimer** des données.
+* **Loss weighting** = **Punir** plus fortement certaines erreurs.
+* **Algorithmes spécialisés** = **Choisir un modèle adapté** au déséquilibre.
+---
+
+### VIII. Sous-apprentissage (Underfitting)
+
+![Generalization | ML System Design in a Hurry](https://images.openai.com/static-rsc-4/wOtqaf0Qyjr_WqGoIQM5zzJe_pUrKdvRwNzJWN7OU7NqA3wboURLmgAlRYbm4xne_YF-nyJps5TKYQX_UPYv89DXXQCmrXYaRVc6JygIbwFmeyumW8cDImSgomGgvjCOzSxs3XFUg1jdG2HUwcxaRs2_DjTCBRKXkw3uixIKmJy_jcIFUVr4t9NRQOmqvrSe?purpose=fullsize)
+
+Définition :
+
+Le modèle est trop simple et n'apprend pas la structure des données.
+
+Symptôme :
+
+Erreur entraînement -> Élevée
+
+Erreur validation -> Élevée
+
+Les deux courbes restent mauvaises.
 
 ### Causes
 
 * modèle trop simple,
-* peu de données,
-* mauvaises features. 
 
----
+* trop de régularisation,
 
-### Solutions
+* features peu informatives,
 
-* modèle plus complexe,
-* nouvelles variables,
-* davantage de données. 
+* pas assez de données.
 
----
+### Corrections
 
-# X. Problèmes de convergence
+* augmenter la capacité,
 
-Parfois la fonction de perte (loss) :
+* ajouter de meilleures features,
+
+* réduire la régularisation excessive.
+
+
+
+### IX. Problèmes de convergence
+
+![Learning Rate: The One Hyperparameter That Actually Matters | by Bhargavi Guddati | Mar, 2026 | Medium](https://images.openai.com/static-rsc-4/0vOyEkFBSIrg-mkObMxn8n4WdvKsvqmlGTWNs2GlBgjHy9VxvVUAHjXZTSsDWIo3ym0Cfe8uOhHaCvDUmhAhbrR-qgdYfCu6ModZ7s5CwBi2zfhtyHLDFVjNKCrhmUcCRZp-5V2Id9g5NIZL7AxwhZX2MVBQ4-xfiCuqR47l47eM3p-KVgDlrzllU42-sebc?purpose=fullsize)
+
+La loss :
 
 * oscille,
+
 * stagne,
-* ne diminue plus.
 
-Causes possibles :
+* diverge.
 
-* learning rate mal réglé,
-* mauvaise initialisation,
-* données mal normalisées. 
+Le cours conseille de vérifier :
 
----
+* la fonction de coût,
 
-# XI. Débogage des hyperparamètres
+* le learning rate,
 
-Les hyperparamètres influencent directement l'apprentissage.
+* l'initialisation des poids,
+
+* la normalisation des données,
+
+* la cohérence des gradients.
+
+💡 Un learning rate scheduler peut aider à sortir d'un plateau.
+
+techniq-debog-model-mach-learn.pdf
+
+### X. Hyperparamètres : la règle absolue
+
+![Parameter Tuning Techniques: Grid Search, Random Search, and Bayesian Optimization | Jillani SoftTech | Artificial intelligence](https://images.openai.com/static-rsc-4/J70OB6Qo9gmMjwRi43NHZ5UTKu7p3YWaSPOkYlhqbI4hX3lN97yUG3R7oegFnhRgqYi6mVtEwI0eZHHQGct44qUksJNZYWVMfO-cMaBuRKP2r8uwFLLtZpSHOtlhkUyVJc7hJI2N79eCpnXQhMw0BTuwxgOpkp85oWSuhkq9oKiYEwqn44ceeIUgrlKWFGxe?purpose=fullsize)
+
+Le cours répète :
+
+Modifier un seul hyperparamètre à la fois.
 
 Exemples :
 
 * learning rate,
+
 * batch size,
-* profondeur,
-* régularisation. 
 
----
+* nombre de couches,
 
-## Règle essentielle
+* profondeur d'arbres,
 
-> Modifier un seul hyperparamètre à la fois. 
+* dropout,
 
-Sinon il devient impossible de savoir lequel est responsable de l'amélioration ou de la dégradation.
+* L1/L2.
 
----
+Méthodes de recherche :
 
-# XII. Débogage Deep Learning
+* Grid Search
 
-Les réseaux profonds ont des problèmes spécifiques.
+* Optimisation bayésienne
 
----
+* Recherche incrémentale
 
-## A. Gradient Vanishing
+⚠️ Vérifier chaque gain sur plusieurs splits pour éviter un faux progrès.
+
+
+
+### XI. Deep Learning : les problèmes de gradient
+
+![How a 1967 Algorithm Stabilized Modern Large Language Models | by Akhilesh Pant (APX) | Jan, 2026 | Medium](https://images.openai.com/static-rsc-4/kFhvc70GlO-5ej9xo1R0IcYIJXiEUl2HYhfL5cCAcFrzVVMFe2w1OqCaFcU22mH_bTEhU5yyKrGfQodf6_tETq-XtbUaDzn0bE5TAJTrvyfvSIKg7LI-ChgQbl9AoUDoT7HDWN8hReE6vvdvOTo1naqUbJgsgTENZRi9HKSIw4BDi9iN2HJZaHqNVptlJzBO?purpose=fullsize)
+
+### Gradient vanishing
 
 Le gradient devient presque nul.
 
-Les premières couches n'apprennent plus.
-
-```text
-Gradient ≈ 0
-```
-
 Conséquence :
 
-Le réseau cesse d'apprendre correctement.
+* les couches profondes n'apprennent plus,
 
----
+* l'entraînement se bloque.
 
-## B. Gradient Explosion
+Solutions :
+
+* ReLU / Leaky ReLU,
+
+* BatchNorm,
+
+* initialisation He/Xavier.
+
+### Gradient explosion
 
 Le gradient devient énorme.
 
-```text
-Gradient = très grand
-```
-
 Conséquence :
 
-* instabilité,
-* divergence,
-* loss qui explose.
+* instabilité numérique,
 
----
+* divergence de la loss.
 
-## Solutions
+Solutions :
 
-* Batch Normalization,
-* bonne initialisation (He, Xavier),
-* ReLU ou Leaky ReLU. 
+* gradient clipping,
 
----
+* BatchNorm,
 
-## C. Neurone mort
+* learning rate plus faible.
 
-Un neurone renvoie toujours :
+Le diagnostic se fait en visualisant les gradients couche par couche (TensorBoard, Weights & Biases).
 
-```text
-0
-```
+techniq-debog-model-mach-learn.pdf
 
-Quelle que soit l'entrée.
+### Neurone mort
 
-Il ne participe plus à l'apprentissage. 
+Un neurone retourne toujours la même valeur (souvent 0).
 
----
+Cela réduit la capacité d'apprentissage du réseau.
 
-# XIII. Architecture trop simple ou trop complexe
+techniq-debog-model-mach-learn.pdf
 
-## Réseau trop simple
+### XII. Architecture : trop grosse ou trop petite ?
 
-```text
-Faible apprentissage
-```
+![Model selection — Data Science Academy](https://images.openai.com/static-rsc-4/PNf2Ry-B7fZJFohHVVp0lhhxtOzLqAJfkv8tglpYhJEuv1yXZ3ZJc43g3rTNN0xa5xjjNYy5MvQ3sSBaUxNgpGhZohYuLlqxPMpYmJNuf4MM6WSHwtb0TTeOWSqAu9kDGbL_D3iQMfo9gK_spAh8qDWn2H9b_TnzJ7U6nCXSHPwPnAEB-VR7J_bZl8HLHpG6?purpose=fullsize)
 
-→ Underfitting.
+| Trop simple                              | Trop complexe                     |
+| ---------------------------------------- | --------------------------------- |
+| Sous-apprentissageFaibles scores partout | SurapprentissageMémorise le bruit |
 
----
+Le cours met en garde contre :
 
-## Réseau trop complexe
+"Toujours plus gros" ≠ toujours meilleur.
 
-```text
-Apprend le bruit
-```
+Ajouter des couches augmente :
 
-→ Overfitting.
+* la complexité,
 
-Le cours rappelle :
+* le coût calculatoire,
 
-> Plus gros ≠ meilleur.
+* le risque de bugs subtils.
 
----
+techniq-debog-model-mach-learn.pdf
 
-# XIV. RNN et Transformers
+### XIII. Transformers et RNN : problèmes spécifiques
 
-## RNN
+![Exploring the Gated Attention Exploration Paper by Qwen : Best Paper Winner ar NeurIPS 2025 | by Abu Huzaifah Bin Haji Bidin | Medium](https://images.openai.com/static-rsc-4/p6icbEH0ff41DQzYOGwLXQ4l499CBR-wK9afoEbxBAxKWOSaLHfxSJY0GTyQ4EfxogCUip360hKDMG6T9_ZHrJJDubdp7o63noLkmrcRm7u54MPCBlvZUTdqhozlO11qS-M4SyLyhNJRzUhgHYwe-NCeDFCdu9dL34L4tHhKBsA5GguSCj5m3sSaSvp9bWmG?purpose=fullsize)
 
-Problème :
+### RNN / LSTM
 
-Ils oublient les dépendances longues.
+Problème principal : oubli des dépendances longues (gradient qui s'efface).
 
----
+### Transformers
 
-## Transformers
-
-Problème :
-
-Attention mal répartie.
-
-Exemple :
-
-Le modèle se concentre sur certains mots et ignore les autres. 
-
----
-
-# XV. Batch Size et Learning Rate
-
-Deux hyperparamètres cruciaux.
-
-## Learning Rate trop élevé
+Problème principal : attention défectueuse.
 
 Symptômes :
 
-```text
-Loss instable
-Oscillations
-Divergence
-```
+* certains tokens monopolisent l'attention,
 
----
+* la fin des phrases est ignorée,
 
-## Batch trop petit
+* les longues séquences se dégradent.
 
-```text
-Apprentissage bruité
-```
+Le cours recommande :
 
----
+* visualiser les poids d'attention,
 
-## Batch trop grand
+* tester des phrases très longues,
 
-```text
-Mauvaise généralisation
-```
-
-ou consommation mémoire excessive. 
-
----
-
-# XVI. Régularisation
-
-But :
-
-Éviter le surapprentissage.
-
-Techniques :
-
-* Dropout,
-* Early Stopping,
-* L1,
-* L2. 
-
-Attention :
-
-Trop de régularisation peut masquer le vrai problème. 
-
----
-
-# XVII. Transfer Learning
-
-Le modèle réutilise un modèle pré-entraîné.
-
-Problème classique :
-
-## Catastrophic Forgetting
-
-Le modèle oublie ce qu'il savait avant.
+* surveiller les gradients dans le temps.
 
 Exemple :
 
-BERT entraîné sur du texte général devient spécialiste du médical et perd ses connaissances générales. 
+Un système de traduction oubliait systématiquement la fin des phrases de plus de 30 tokens.
 
----
+techniq-debog-model-mach-learn.pdf
 
-# Les notions indispensables à connaître
+### XIV. Batch size et Learning rate
 
-| Notion                  | Définition                                                    |
-| ----------------------- | ------------------------------------------------------------- |
-| Pipeline IA             | Chaîne complète de traitement.                                |
-| Débogage stochastique   | Débogage soumis à l'aléatoire de l'apprentissage.             |
-| Ablation                | Retrait progressif d'éléments pour trouver la cause d'un bug. |
-| Outlier                 | Valeur extrême anormale.                                      |
-| Data Leakage            | Fuite d'information de la cible dans les données.             |
-| Underfitting            | Modèle trop simple.                                           |
-| Gradient Vanishing      | Gradient qui devient nul.                                     |
-| Gradient Explosion      | Gradient qui devient énorme.                                  |
-| Neurone mort            | Neurone renvoyant toujours la même valeur.                    |
-| Warm-up                 | Augmentation progressive du learning rate.                    |
-| Catastrophic Forgetting | Oubli des connaissances pré-entraînées.                       |
+![Optimizing Deep Learning Models](https://images.openai.com/static-rsc-4/JNJHewN2ru5p0Nnf9XGATT-M36NdmHuVCLsujkN2h7E8HTskoJ3yAYeP20kAkk4aeJxGBtOW_K3Qrvwy1CsMp5rE-Gsi10stUWq1_s0pjybJVRrdbhf0hd2JpMOkSTBOASiPaD0LUfQUczISw9wHUl7bprvRhFO211HN-8SOmtL54vzSjqrjdZLklB2H7eQ9?purpose=fullsize)
 
----
+| Paramètre        | Problème typique                  |
+| ---------------- | --------------------------------- |
+| LR trop élevé    | Loss qui diverge                  |
+| LR trop faible   | Apprentissage très lent           |
+| Batch trop petit | Bruit élevé                       |
+| Batch trop grand | Mauvaise généralisation / mémoire |
 
-# La méthode à retenir pour l'examen
+Warm-up :
 
-Mémorise cette check-list :
+Commencer avec un petit learning rate puis l'augmenter progressivement.
 
-1. **Observer les symptômes.**
-2. **Formuler plusieurs hypothèses.**
-3. **Modifier une seule chose à la fois.**
-4. **Tester chaque composant séparément.**
-5. **Vérifier les données avant le modèle.**
-6. **Contrôler le prétraitement et le data leakage.**
-7. **Analyser underfitting, convergence et hyperparamètres.**
-8. **Pour le Deep Learning : surveiller gradients, batch size, learning rate et régularisation.**
-9. **Documenter tous les essais.**
+Très utile pour stabiliser les débuts d'entraînement.
 
-💡 Pour l'examen, les notions les plus souvent demandées sont : **pipeline IA, cycle de débogage, ablation, outlier, data leakage, déséquilibre de classes, underfitting, gradient vanishing/explosion et catastrophic forgetting**. Ce sont les concepts centraux du cours.
+techniq-debog-model-mach-learn.pdf
 
+### XV. Régularisation
 
+![How I Prevent Overfitting in ML Models Using EarlyStopping and Dropout | by Bhagya Rana | Medium](https://images.openai.com/static-rsc-4/lsgk1DMI1sBkdSpdVXX7Fnjk4oD1v7P33Ekh_G3X5iu5YNOZT-sIy1gEiJ0MOOreyWR6XZ0Tqd-sZCVHbeYBWmqFsgXb2Vp2z-0TsqJZOTsYiFef2wLysDNfHvdXIjyAolcMM9tNZv5CnSzsmr2vjrOLTSysdB_05J9QRkDVXVtP-YwJ53fzJ4Q1a4CzTCTl?purpose=fullsize)
 
+| Trop forte                             | Trop faible                     |
+| -------------------------------------- | ------------------------------- |
+| Le modèle n'apprend plus(underfitting) | Le modèle mémorise(overfitting) |
+
+Outils :
+
+* Dropout
+
+* Early stopping
+
+* L1 / L2
+
+⚠️ Le cours avertit :
+
+Trop de régularisation peut masquer un vrai bug de données ou d'architecture.
+
+techniq-debog-model-mach-learn.pdf
+
+### XVI. Transfert learning
+
+![#ai #machinelearning #deeplearning #transferlearning #nlp #computervision | Nourhane KEFSI](https://images.openai.com/static-rsc-4/i42hs30HYdAk-h83C4XJN360LmE41eT0T-MBNkPXVoIFccCY_OJstA_Q1F4XtMxhI0WBawkayE3axAoalYFag-jT4hntgGq2t7C45mdz-9BwkgOu0BHA0T-R41AcFvq2N1fpo3yeNAvi9AQfgqorY3T-ltK_mpxN6MkhALF19nGBFfAFY0QrwXkUnb7Q29oS?purpose=fullsize)
+
+Problème majeur :
+
+### Catastrophic forgetting
+
+Le modèle oublie ses connaissances pré-entraînées en se spécialisant trop vite.
+
+Diagnostic :
+
+* suivre les performances sur la tâche cible et source,
+
+* tester différents degrés de fine-tuning,
+
+* geler progressivement les couches.
+
+💡 Mnémo : "Too much fine-tuning = too much forgetting."
+
+techniq-debog-model-mach-learn.pdf
+
+### XVII. La check-list finale à apprendre
+
+1. Vérifier les données
+
+2. Vérifier le prétraitement
+
+3. Vérifier le déséquilibre des classes
+
+4. Vérifier le sous-/surapprentissage
+
+5. Vérifier la convergence (loss, gradients)
+
+6. Tester les hyperparamètres (un à la fois)
+
+7. Simplifier / faire de l'ablation
+
+8. Comparer avec une baseline stable
+
+9. Tester chaque brique du pipeline séparément
+
+10. Garantir la reproductibilité (seeds, versions, données)
+
+Cette séquence résume pratiquement tout le cours.
+
+techniq-debog-model-mach-learn.pdf
+
+### Les 10 notions indispensables à connaître
+
+| Notion                  | Définition simple                                                   |
+| ----------------------- | ------------------------------------------------------------------- |
+| Pipeline d'IA           | Chaîne complète de traitement des données jusqu'à l'inférence.      |
+| Débogage stochastique   | Débogage d'un système dont les résultats varient selon l'aléatoire. |
+| Ablation                | Retrait progressif de composants pour isoler une cause.             |
+| Outlier                 | Valeur très éloignée de la tendance normale.                        |
+| Data leakage            | Fuite de la cible ou d'informations futures dans les features.      |
+| Underfitting            | Modèle trop simple.                                                 |
+| Gradient vanishing      | Gradient quasi nul dans les couches profondes.                      |
+| Gradient explosion      | Gradient énorme provoquant une divergence.                          |
+| Neurone mort            | Neurone qui retourne toujours la même valeur.                       |
+| Catastrophic forgetting | Perte des connaissances pré-entraînées lors du fine-tuning.         |
+
+techniq-debog-model-mach-learn.pdf
+
+### La phrase d'examen à retenir
+
+« Déboguer un modèle d'IA consiste à isoler méthodiquement la cause racine en contrôlant chaque maillon du pipeline — données, prétraitement, modèle, hyperparamètres et environnement — dans un cadre strictement reproductible. »
+
+Si tu sais expliquer cette phrase, puis définir ablation, data leakage, gradient vanishing et catastrophic forgetting, tu maîtrises déjà l'essentiel du cours.
+
+techniq-debog-model-mach-learn.pdf
