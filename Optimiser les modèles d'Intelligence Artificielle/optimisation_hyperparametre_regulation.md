@@ -31,7 +31,6 @@ et
 
 # I. Paramètres et hyperparamètres : quelle différence ?
 
-C'est la première notion à bien comprendre.
 
 ## Les paramètres
 
@@ -242,30 +241,30 @@ Quand modifier le Learning Rate ?
 Si :
 
 la loss oscille fortement ;
+
+
+Si :
 le modèle ne converge pas ;
 
 ➡️ on diminue souvent le Learning Rate.
-
-Si :
 
 l'apprentissage est extrêmement lent ;
 
 ➡️ on peut l'augmenter légèrement.
 
-Avantages
+***Avantages***
 
 ✔ contrôle directement la vitesse d'apprentissage
 
 ✔ très influent sur les performances
 
-Inconvénients
+***Inconvénients***
 
 ❌ difficile à choisir
 
 ❌ une mauvaise valeur peut empêcher complètement l'apprentissage
 
-À retenir
-
+>À retenir
 Le Learning Rate détermine la taille des corrections effectuées par le modèle après chaque erreur.
 
 ---
@@ -330,22 +329,24 @@ Mise à jour
 
 Les poids sont modifiés beaucoup plus souvent.
 
->Pourquoi utiliser des batchs ?
+***Pourquoi utiliser des batchs ?***
+
 Si on utilisait toutes les données à chaque calcul :
 - énormément de mémoire serait nécessaire ;
 - l'entraînement serait très lent.
 
 Les batchs permettent donc de découper les données.
+
 ---
 
 ### Petit batch
 
-Avantages :
+***Avantages*** :
 
 * moins de mémoire utilisée ;
 * meilleure généralisation.
 
-Inconvénients :
+**Inconvénients** :
 
 * apprentissage plus bruité ;
 * plus lent.
@@ -354,12 +355,12 @@ Inconvénients :
 
 ### Grand batch
 
-Avantages :
+***Avantages*** :
 
 * entraînement plus stable ;
 * calcul plus rapide sur GPU.
 
-Inconvénients :
+***Inconvénients*** :
 
 * nécessite plus de mémoire ;
 * peut moins bien généraliser.
@@ -471,6 +472,7 @@ Supposons que tu ne connaisses pas les meilleurs paramètres.
 
 Tu hésites entre :
 
+````
 Learning Rate
 0.1
 
@@ -483,11 +485,13 @@ Batch Size
 32
 
 64
+````
 
 Tu ne sais pas quelle combinaison est la meilleure.
 
 Le Grid Search va toutes les essayer.
 
+````
 0.1 +16
 
 0.1 +32
@@ -501,15 +505,12 @@ Le Grid Search va toutes les essayer.
 ...
 
 0.001 +64
-
+````
 À chaque essai :
+- le modèle est entraîné ;
+- les performances sont mesurées.
 
-le modèle est entraîné ;
-les performances sont mesurées.
-
-À la fin,
-
-on garde la meilleure combinaison.
+À la fin, on garde la meilleure combinaison.
 
 **Exemple concret**
 
@@ -537,37 +538,25 @@ Ensuite il garde la meilleure.
 
 Le problème est qu'il devient vite énorme.
 
+````
 Imaginons :
 
-Learning Rate
+Learning Rate : 10 valeurs
 
-10 valeurs
+Batch : 10 valeurs
 
-Batch
+Dropout : 10 valeurs
 
-10 valeurs
+L2 : 10 valeurs
 
-Dropout
-
-10 valeurs
-
-L2
-
-10 valeurs
-
-Le nombre d'essais devient :
-
-10 ×10 ×10 ×10
-
-=
-
-10 000 entraînements
+Le nombre d'essais devient : 10 ×10 ×10 ×10 = 10 000 entraînements
+````
 
 Or un seul entraînement peut durer plusieurs heures.
 
 Le Grid Search devient donc rapidement inutilisable sur de gros modèles.
 
-*** Quand l'utiliser ?***
+***Quand l'utiliser ?***
 
 ✔ Peu d'hyperparamètres.
 
@@ -587,7 +576,8 @@ Contrairement au Grid Search, il ne teste pas toutes les possibilités.
 
 Il en choisit seulement quelques-unes, de manière aléatoire.
 
-***Pourquoi a-t-il été créé ?
+***Pourquoi a-t-il été créé ?***
+
 Imaginons que tu veuilles régler :
 
 | Hyperparamètre | Nombre de valeurs |
@@ -622,15 +612,7 @@ Le Random Search propose donc une idée simple :
 
 Supposons que tu aies 10 000 combinaisons possibles.
 
-Le Random Search peut décider d'en tester seulement :
-
-100
-
-ou
-
-200
-
-prises complètement au hasard.
+Le Random Search peut décider d'en tester seulement : 100 ou 200 prises complètement au hasard.
 
 Par exemple :
 | Essai | Learning Rate | Batch | Dropout |
@@ -758,6 +740,7 @@ Deuxième :
 
 Le TPE comprend immédiatement que :
 
+````
 0.001
 
 ↓
@@ -773,6 +756,7 @@ Les prochains essais seront donc :
 0.0015
 
 0.0009
+````
 
 Il concentre ses recherches autour des bonnes solutions.
 
@@ -825,15 +809,9 @@ Inspirés de la sélection naturelle.
 
 Chaque configuration est un "individu".
 
-Les meilleures sont conservées,
+Les meilleures sont conservées, croisées entre elles, et légèrement modifiées (mutation).
 
-croisées entre elles,
-
-et légèrement modifiées (mutation).
-
-Au fil des générations,
-
-on obtient des configurations de plus en plus performantes.
+Au fil des générations, on obtient des configurations de plus en plus performantes.
 
 Très utiles pour des problèmes complexes. 
 
@@ -843,8 +821,7 @@ Très utiles pour des problèmes complexes.
 
 ***Définition***
 Le problème des méthodes précédentes est simple.
-Même si une configuration est mauvaise,
-il faut souvent attendre la fin de son entraînement pour le savoir.
+Même si une configuration est mauvaise, il faut souvent attendre la fin de son entraînement pour le savoir.
 
 Hyperband dit :
 
@@ -891,6 +868,7 @@ Les 50 meilleurs continuent.
 
 Puis on recommence.
 
+````
 100 modèles
 
 ↓
@@ -912,6 +890,7 @@ Puis on recommence.
 ↓
 
 1 meilleur modèle
+````
 Pourquoi cette méthode est-elle rapide ?
 
 Les mauvais modèles sont éliminés très tôt.
@@ -981,7 +960,8 @@ Les poids inutiles deviennent progressivement :
 0
 
 Le modèle supprime donc automatiquement certaines variables.
-Pourquoi faire cela ?
+
+***Pourquoi faire cela ?***
 
 Toutes les variables ne sont pas utiles.
 
