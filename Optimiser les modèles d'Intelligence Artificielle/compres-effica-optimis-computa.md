@@ -382,8 +382,12 @@ Exemple :
 | Throughput | Nombre de prédictions par seconde. |
 | Benchmarking | Comparaison de plusieurs modèles. |
 | Distillation | Un grand modèle enseigne à un petit. |
+|Distillation de connaissances|Entraînement d'un modèle compact à imiter les sorties probabilistes d'un modèle plus massif |
 | Pruning | Suppression des connexions inutiles. |
+|Pruning structuré|Suppression de blocs entiers (filtres, neurones, têtes d'attention) permettant des gains significatifs lors du déploiement matériel|
+|Pruning non structuré| Retrait individuel de poids jugés négligeables, indépendamment de leur position dans la couche|
 | Quantification | Réduction de la précision numérique. |
+|Quantification-aware training| Apprentissage du modèle avec des contraintes de précision numérique réduite intégrées dès l'origine |
 | MobileNet | Architecture légère pour appareils mobiles. |
 | TensorRT | Optimisation des modèles pour GPU NVIDIA. |
 | TVM | Optimisation multi-matériels. |
@@ -393,6 +397,9 @@ Exemple :
 | Docker | Conteneur contenant l'application et ses dépendances. |
 | Kubernetes | Gestion automatique des conteneurs. |
 | MLOps | Gestion complète du cycle de vie d'un modèle. |
+|Bande passante mémoire| Quantité maximale de données transférable entre mémoire et unités de calcul, dont la saturation crée un goulot matériel incompressible. Est la limite physique des transferts entre mémoire et calcul : aucune optimisation logicielle ne peut la compenser si elle est saturée|
+|Baseline| Ensemble de mesures de référence permettant d'évaluer objectivement les gains ou pertes d'une optimisation|
+|Heatmap ou graphe d'exécution| rendent visibles les nœuds critiques qui bloquent la chaîne.  Référentiel de mesures qui permet de juger objectivement l'impact de chaque modification.|
 
 ---
 
@@ -416,7 +423,7 @@ Il faut être capable d'expliquer :
 
 Profiler le modèle dans l'environnement cible réel, pas uniquement sur machine de développement.
 
-Utiliser des outils spécialisés (PyTorch Profiler, TensorFlow Profiler, NVIDIA Nsight) pour cartographier chaque opération.
+Utiliser des outils spécialisés (PyTorch Profiler, TensorFlow Profiler, NVIDIA Nsight) pour cartographier chaque opération. Analyse ligne à ligne des opérations et visualisation de la charge sur chaque composant matériel
 
 Mesurer latence, débit, consommation mémoire et I/O sur plusieurs scénarios d'usage représentatifs.
 
